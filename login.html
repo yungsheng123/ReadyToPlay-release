@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sign in</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Ccircle cx='4' cy='4' r='4' fill='%23166534'/%3E%3C/svg%3E">
+    <!-- The login page: sign in, create an account (the sports come from the database), change a password. The strip of logos at the top
+         is up to 5 hosts' logos picked at random from the database on every visit (api/auth/logos), sliding slowly. A successful sign-in
+         opens fees.html?u=CODE (one page for every sport; the sport comes from the database) with that user's own code, like a personal
+         link. "Remember me" keeps the sign-in in this browser (localStorage) so the next visit goes straight to the
+         page; without it the sign-in only lasts while this tab is open. "Log out" in a page's menu clears it.
+         The look is in shared/css/login.css and the behaviour in shared/js/login.js; after changing either, bump its ?v= number below. -->
+    <link rel="stylesheet" href="shared/css/fees.css">
+    <link rel="stylesheet" href="shared/css/login.css">
+</head>
+<body>
+    <div class="lg-wrap">
+        <div class="lg-strip" id="logoStrip" hidden aria-hidden="true"><div class="lg-track" id="logoTrack"></div></div>
+
+        <div class="lg-card">
+            <div class="lg-tabs" role="tablist">
+                <button type="button" id="tabSignIn" class="on" role="tab" aria-selected="true">Sign in</button>
+                <button type="button" id="tabSignUp" role="tab" aria-selected="false">Create account</button>
+            </div>
+            <div class="lg-err" id="err" role="alert"></div>
+            <div class="lg-ok" id="ok" role="status"></div>
+
+            <form class="lg-form" id="formSignIn" autocomplete="on">
+                <label for="siUser">Username</label>
+                <input id="siUser" type="text" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="30">
+                <label for="siPass">Password</label>
+                <input id="siPass" type="password" autocomplete="current-password" maxlength="100">
+                <div class="lg-remember"><input id="siRemember" type="checkbox"><label for="siRemember" style="margin:0;font-size:14px;color:inherit">Remember me on this device</label></div>
+                <button type="submit" class="primary" id="btnSignIn">Sign in</button>
+                <div class="lg-links"><button type="button" id="goChange">Change password</button></div>
+            </form>
+
+            <form class="lg-form" id="formSignUp" autocomplete="on" hidden>
+                <label for="suName">Your name</label>
+                <input id="suName" type="text" autocomplete="name" maxlength="40" placeholder="Shown on your page">
+                <label for="suUser">Username</label>
+                <input id="suUser" type="text" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="30" placeholder="3 to 30 letters, digits . _ -">
+                <label for="suPass">Password</label>
+                <input id="suPass" type="password" autocomplete="new-password" maxlength="100" placeholder="At least 8 characters">
+                <label for="suPass2">Repeat password</label>
+                <input id="suPass2" type="password" autocomplete="new-password" maxlength="100">
+                <label>Sports <span style="opacity:.7">(choose one or more)</span></label>
+                <div class="lg-sport" role="group" aria-label="Sports">
+                    <input type="checkbox" name="sport" id="spBad" value="badminton"><label for="spBad">Badminton</label>
+                    <input type="checkbox" name="sport" id="spPick" value="pickleball"><label for="spPick">Pickleball</label>
+                </div>
+                <div id="suPinWrap">
+                    <label for="suPin">Access code (6 digits)</label>
+                    <input id="suPin" type="password" inputmode="numeric" autocomplete="off" maxlength="6" placeholder="You type it to open your page">
+                    <label for="suPin2">Repeat access code</label>
+                    <input id="suPin2" type="password" inputmode="numeric" autocomplete="off" maxlength="6">
+                </div>
+                <div class="lg-remember"><input id="suRemember" type="checkbox"><label for="suRemember" style="margin:0;font-size:14px;color:inherit">Remember me on this device</label></div>
+                <button type="submit" class="primary" id="btnSignUp">Create account</button>
+            </form>
+
+            <form class="lg-form" id="formPin" autocomplete="off" hidden>
+                <h2>Create your access code</h2>
+                <p class="lg-note">Your page opens with a 6-digit code that only you choose. You will type it every time you open the page, and you can change it later in the page's Profile.</p>
+                <label for="pcPin">Access code (6 digits)</label>
+                <input id="pcPin" type="password" inputmode="numeric" autocomplete="off" maxlength="6">
+                <label for="pcPin2">Repeat access code</label>
+                <input id="pcPin2" type="password" inputmode="numeric" autocomplete="off" maxlength="6">
+                <button type="submit" class="primary" id="btnPin">Save code and continue</button>
+            </form>
+
+            <form class="lg-form" id="formChange" autocomplete="on" hidden>
+                <h2>Change password</h2>
+                <label for="chUser">Username</label>
+                <input id="chUser" type="text" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="30">
+                <label for="chOld">Current password</label>
+                <input id="chOld" type="password" autocomplete="current-password" maxlength="100">
+                <label for="chNew">New password</label>
+                <input id="chNew" type="password" autocomplete="new-password" maxlength="100" placeholder="At least 8 characters">
+                <label for="chNew2">Repeat new password</label>
+                <input id="chNew2" type="password" autocomplete="new-password" maxlength="100">
+                <button type="submit" class="primary" id="btnChange">Change password</button>
+                <div class="lg-links"><button type="button" id="goBack">Back to sign in</button></div>
+            </form>
+        </div>
+    </div>
+
+    <script src="shared/js/login.js"></script>
+</body>
+</html>

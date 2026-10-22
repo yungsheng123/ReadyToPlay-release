@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- The public guest page: guest.html (for every sport). It is a copy of fees.html with data-guest on the body tag, so the
+     address carries no code. It is look-only and shows no amounts. When fees.html's markup changes, change this
+     file the same way (it can be regenerated from fees.html: add this comment and add the data-guest attribute to the body tag). -->
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ReadyToPlay</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Ccircle cx='4' cy='4' r='4' fill='%23166534'/%3E%3C/svg%3E">
+    <!-- Shared styles and behaviour are in shared: the page serves every sport (the sport, its heading and its calculator starting prices come from the database, see shared/js/app/ and the "sports" collection); sessions.css and shared/js/app/ hold the sessions, history and calculator. (Every script and style sheet gets its version from the server, see StampedHtmlHandler: nothing to bump by hand.) -->
+    <script>window.APP_ROOT = '';</script>
+    <link rel="stylesheet" href="shared/css/fees.css">
+    <link rel="stylesheet" href="shared/css/sessions.css">
+    <script src="shared/js/core/01-base.js" defer></script>
+    <script src="shared/js/core/02-saving-api.js" defer></script>
+    <script src="shared/js/core/03-changes.js" defer></script>
+    <script src="shared/js/core/04-edit-mode.js" defer></script>
+    <script src="shared/js/core/05-drag.js" defer></script>
+    <script src="shared/js/core/06-popups.js" defer></script>
+    <script src="shared/js/core/07-views.js" defer></script>
+    <script src="shared/js/core/08-nav.js" defer></script>
+    <script src="shared/js/core/09-pictures.js" defer></script>
+    <script src="shared/js/core/10-live.js" defer></script>
+    <script src="shared/js/app-shell.js" defer></script>
+    <script src="shared/js/page-menu.js" defer></script>
+    <script src="shared/js/calendar-view.js" defer></script>
+    <script src="shared/js/profile.js" defer></script>
+    <script src="shared/js/app/01-state.js" defer></script>
+    <script src="shared/js/app/02-session-box.js" defer></script>
+    <script src="shared/js/app/03-ranking.js" defer></script>
+    <script src="shared/js/app/04-calc.js" defer></script>
+    <script src="shared/js/app/05-new-session.js" defer></script>
+    <script src="shared/js/app/06-session-dialogs.js" defer></script>
+    <script src="shared/js/app/07-money.js" defer></script>
+    <script src="shared/js/app/08-patch.js" defer></script>
+    <script src="shared/js/app/09-add-players.js" defer></script>
+    <script src="shared/js/app/10-sports.js" defer></script>
+    <script src="shared/js/app/11-menu.js" defer></script>
+    <script src="shared/js/app/12-players.js" defer></script>
+    <script src="shared/js/app/13-tags.js" defer></script>
+    <script src="shared/js/app/14-activity.js" defer></script>
+    <script src="shared/js/app/15-boot.js" defer></script>
+</head>
+<body class="booting" data-guest>
+    <header class="top feesview">
+        <div class="in">
+            <div class="head">
+                <div class="brand">
+                    <img class="logo" alt="Logo" width="52" height="52" style="visibility:hidden">
+                    <div>
+                        <h1>ReadyToPlay</h1>
+                        <div class="who" id="who">Loading...</div>
+                    </div>
+                </div>
+                <div class="hbtns">
+                    <button type="button" id="btnQr" hidden>QR</button>
+                </div>
+            </div>
+            <div class="herorow">
+                <div class="herol">
+                    <div class="bal">
+                        <span id="balLabel">Total balance</span><button type="button" id="btnHideBal" class="hidebtn" aria-label="Hide balance" aria-pressed="false" title="Hide balance"></button>
+                        <b id="balance">RM 0.00</b>
+                    </div>
+                    <div class="balbtns">
+                        <button type="button" id="btnDeposit">Deposit</button>
+                        <button type="button" id="btnWithdraw">Withdraw</button>
+                    </div>
+                </div>
+                <div class="ring" id="ring" role="img" aria-label="Players who have paid">
+                    <svg viewBox="0 0 78 78" width="78" height="78" aria-hidden="true"><circle class="rt" cx="39" cy="39" r="31"/><circle class="rv" id="ringVal" cx="39" cy="39" r="31" transform="rotate(-90 39 39)" stroke-dasharray="0 195"/><text class="rn" id="ringNum" x="39" y="38" text-anchor="middle">0/0</text><text class="rs" x="39" y="52" text-anchor="middle">paid</text></svg>
+                </div>
+            </div>
+            <div class="meta" hidden>
+                <span class="count" id="sessionLabel">Fee collection</span>
+                <span class="count"><b id="paidCount">0</b> of <span id="total">0</span> paid</span>
+            </div>
+            <div class="prog" id="bar" hidden role="progressbar" aria-label="Fees paid" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                <div id="barFill"></div>
+            </div>
+        </div>
+    </header>
+
+    <main class="feesview">
+        <div id="msg" role="alert"></div>
+
+        <div class="session" id="sessionBox">
+            <div class="shead">
+                <span class="sprofit" id="sessProfit" hidden></span>
+                <div class="stools">
+                    <button type="button" id="btnHistory" class="histbtn" hidden><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 8a5.5 5.5 0 1 0 1.8-4.1M2.5 2.8v2.6h2.6M8 5v3.2l2 1.3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span>View History</span></button>
+                    <div class="smorewrap">
+                        <button type="button" id="btnSessMore" class="smore" aria-label="Session menu" title="Session menu" aria-haspopup="true" aria-expanded="false" hidden><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="3" r="1.4" fill="currentColor"/><circle cx="8" cy="8" r="1.4" fill="currentColor"/><circle cx="8" cy="13" r="1.4" fill="currentColor"/></svg></button>
+                        <div id="sessMenu" role="menu" hidden>
+                            <button type="button" role="menuitem" id="btnEditSession"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 13l.7-3L10.8 3a1.4 1.4 0 0 1 2 0l.2.2a1.4 1.4 0 0 1 0 2L6 12.3 3 13z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg><span>Edit session</span></button>
+                            <button type="button" role="menuitem" id="btnDeleteSession" class="dangeritem"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.8 4.5h10.4M6.2 4.5V3h3.6v1.5M4.2 4.5l.6 8.3h6.4l.6-8.3M6.8 7v3.8M9.2 7v3.8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Delete session</span></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="slabel" id="sessLabelTop">Current session</div>
+            <div class="curtitle" id="curTitle" hidden></div>
+            <div class="sline"><span class="sic"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="3" width="12" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M2 6.5h12M5.5 1.8v2.6M10.5 1.8v2.6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span><b id="sessionDate">Loading...</b><span class="stag" id="sessTag" hidden></span></div>
+            <div class="sline" id="sessTimeLine" hidden><span class="sic"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 4.6V8l2.4 1.6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span id="sessTime"></span></div>
+            <div class="sline" id="sessPlaceLine" hidden><span class="sic"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 14.2s4.6-4.1 4.6-7.6a4.6 4.6 0 0 0-9.2 0c0 3.5 4.6 7.6 4.6 7.6z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="8" cy="6.5" r="1.6" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></span><span id="sessPlace"></span></div>
+            <div class="sdetail" id="sessionDetail" hidden></div>
+            <div class="pastbanner" id="pastBanner" hidden><span>You are viewing a past session. Changes update your balance.</span><button type="button" id="btnBackLatest">Back to latest</button></div>
+            <button type="button" class="supcoming" id="sessUpcoming" hidden><span class="supl"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="3" width="12" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M2 6.5h12M5.5 1.8v2.6M10.5 1.8v2.6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><span id="sessUpText"></span></span><span class="supr"><span id="sessUpNext"></span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        </div>
+
+        <div id="listTools">
+            <div class="addrow">
+                <div class="sbox">
+                    <input id="pSearch" type="text" maxlength="60" placeholder="Search or add a player" aria-label="Find or add a player" autocomplete="off" enterkeyhint="search">
+                </div>
+                <button type="button" id="btnQuickAdd" class="primary">Add</button>
+            </div>
+
+            <div id="pDrop" hidden></div>
+
+            <div id="addTray" hidden>
+                <div class="traytitle">Adding players</div>
+                <div id="trayChips"></div>
+                <div class="trayfoot"><span>Tap &times; to take one off</span><button type="button" id="trayClear" class="linkbtn">Clear all</button></div>
+            </div>
+
+            <div id="pForm" hidden>
+                <b>New player</b>
+                <label for="pfName">Name</label>
+                <input id="pfName" type="text" maxlength="60" autocomplete="off">
+                <label for="pfLink">Unique link</label>
+                <input id="pfLink" type="text" maxlength="60" autocomplete="off" placeholder="Any text only this player has, e.g. ali-tan-88" enterkeyhint="done">
+                <p class="pfnote">Each player needs their own link. It tells two players with the same name apart. It isn't opened anywhere.</p>
+                <div id="pfErr" hidden><span id="pfErrText"></span><button type="button" id="pfUse" hidden></button></div>
+                <div class="row">
+                    <button type="button" id="pfCancel">Cancel</button>
+                    <button type="button" id="pfAdd" class="primary">Add player</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="chips" id="chips" hidden></div>
+        <div id="empty">Loading...</div>
+        <div id="grid"></div>
+        <div class="hint" id="hint" hidden>Hold a name, then drag to reorder</div>
+
+        <section class="hist" id="ledgerBox" hidden>
+            <h2>Deposits and withdrawals <span>latest 20</span></h2>
+            <ul id="ledgerList"></ul>
+            <p class="older" id="ledgerMore" hidden></p>
+        </section>
+    </main>
+
+    <button type="button" id="btnNewSession" class="fab primary" aria-label="New session" title="New session" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button>
+
+    <!-- The other views of this page, shown in place of the fees list from the header menu (see shared/js/app/).
+         Their headers are made by the script. -->
+    <!-- The calendar of the user who has one is drawn in here the first time it is opened; see shared/js/calendar-view.js -->
+    <div id="calView"></div>
+
+    <div class="panelview" id="pvLeaderboard" data-panel="leaderboard" data-title="Leaderboard">
+        <main>
+            <section class="hist" id="rankBox" hidden>
+                <div id="rankFilter" class="tagrow" role="group" aria-label="Sport" hidden></div>
+                <h2><span class="rk-title"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10v5a5 5 0 0 1-10 0V4zM7 6H4v2a3 3 0 0 0 3 3M17 6h3v2a3 3 0 0 1-3 3M12 14v3M8.5 20h7M9.5 17h5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>Most participated players</span> <span>top 10</span></h2>
+                <div class="rk-card">
+                    <div class="rk-pod" id="rankPodium"></div>
+                    <ul id="rankList"></ul>
+                </div>
+            </section>
+                <p class="pvempty" id="rankEmpty" hidden>No games yet. Players show up here once they have been in a session.</p>
+        </main>
+    </div>
+
+    <div class="panelview" id="pvPlayers" data-panel="players" data-title="Player management">
+        <main>
+            <div id="pmMsg" role="alert"></div>
+            <div class="addrow">
+                <input id="pmSearch" type="text" maxlength="60" placeholder="Search name or link" aria-label="Search players" autocomplete="off" enterkeyhint="search">
+                <button type="button" id="pmAdd" class="primary">Add player</button>
+            </div>
+            <div id="pmFilter" class="tagrow" hidden></div>
+            <p class="pmcount" id="pmHint" hidden>Tap a tag to show only those players. Hold a tag, then drag it onto a player to give them that tag.</p>
+            <p class="pmcount" id="pmCount"></p>
+            <ul id="pmList"></ul>
+            <button type="button" class="linkbtn" id="pmMore" hidden>View more</button>
+        </main>
+    </div>
+
+    <div id="pmOverlay">
+        <div id="pmDialog" role="dialog" aria-modal="true" aria-labelledby="pmTitle">
+            <p id="pmTitle">Add player</p>
+            <p id="pmSub">Each player needs their own unique link.</p>
+            <label for="pmName">Name</label>
+            <input id="pmName" type="text" maxlength="60" autocomplete="off">
+            <div id="pmLinkWrap">
+                <label for="pmLink">Unique link</label>
+                <input id="pmLink" type="text" maxlength="60" autocomplete="off" placeholder="Any text only this player has, e.g. ali-tan-88" enterkeyhint="next">
+            </div>
+            <label>Gender</label>
+            <div class="gpick" id="pmGender" role="group" aria-label="Gender">
+                <button type="button" data-g="M" class="m">&#9794; Male</button>
+                <button type="button" data-g="F" class="f">&#9792; Female</button>
+            </div>
+            <label for="pmTagInput">Tags <span>(optional, up to 8)</span></label>
+            <div id="pmTagChips" class="tagrow"></div>
+            <input id="pmTagInput" type="text" maxlength="30" autocomplete="off" placeholder="Type a tag, then Enter" enterkeyhint="done">
+            <div id="pmTagSuggest" class="tagrow"></div>
+            <div class="row">
+                <button type="button" id="pmCancel">Cancel</button>
+                <button type="button" id="pmSave" class="primary">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="calcOverlay">
+        <div id="calcSheet" role="dialog" aria-modal="true" aria-labelledby="calcTitle">
+            <div class="chead">
+                <div class="ttl">
+                    <b id="calcTitle">Cost and earning</b>
+                    <div id="calcStatus" role="status"></div>
+                </div>
+                <div class="cbtns">
+                    <button type="button" id="btnCalcReset">Reset</button>
+                    <button type="button" id="btnCalcClose" class="primary">Close</button>
+                </div>
+            </div>
+            <div class="cbody">
+            <div class="cmode" id="cMode" role="group" aria-label="Calculation type">
+                <button type="button" data-mode="fixed" aria-pressed="false">Fixed Rate</button>
+                <button type="button" data-mode="aa" aria-pressed="false">AA</button>
+            </div>
+            <div class="cunpaid" id="cUnpaidWrap" hidden><label for="cUnpaid">Contain</label><select id="cUnpaid" aria-label="Which players the quantities count"><option value="paid">paid</option><option value="all">all</option></select><span>players</span></div>
+            <p class="cmodenote" id="cModeNote"></p>
+            <div class="csec first">Earning</div>
+            <div class="cg">
+                <span class="hd">Item</span><span class="hd r">Price</span><span class="hd r">Quantity</span><span class="hd r">Total</span>
+                <span class="nm">Social Female</span><input id="cpSF" data-kind="price" type="text" inputmode="decimal" maxlength="8" autocomplete="off" aria-label="Social Female price"><input id="cqSF" data-kind="qty" type="text" inputmode="numeric" maxlength="4" autocomplete="off" aria-label="Social Female quantity"><span class="tot" id="ctSF"></span>
+                <span class="nm">Social Male</span><input id="cpSM" data-kind="price" type="text" inputmode="decimal" maxlength="8" autocomplete="off" aria-label="Social Male price"><input id="cqSM" data-kind="qty" type="text" inputmode="numeric" maxlength="4" autocomplete="off" aria-label="Social Male quantity"><span class="tot" id="ctSM"></span>
+                <span class="nm reg">Regular Female</span><input class="reg" id="cpAF" data-kind="price" type="text" inputmode="decimal" maxlength="8" autocomplete="off" aria-label="Regular Female price"><input class="reg" id="cqAF" data-kind="qty" type="text" inputmode="numeric" maxlength="4" autocomplete="off" aria-label="Regular Female quantity"><span class="tot reg" id="ctAF"></span>
+                <span class="nm reg">Regular Male</span><input class="reg" id="cpAM" data-kind="price" type="text" inputmode="decimal" maxlength="8" autocomplete="off" aria-label="Regular Male price"><input class="reg" id="cqAM" data-kind="qty" type="text" inputmode="numeric" maxlength="4" autocomplete="off" aria-label="Regular Male quantity"><span class="tot reg" id="ctAM"></span>
+            </div>
+            <p class="cnote">The quantities fill from the players who have paid, by gender. A player tagged Regular goes in the Regular rows. You can still change them.</p>
+            <div class="csum"><span>Quantity <b id="cPlayers">0</b></span><span>Earning <b id="cEarn">0.00</b></span></div>
+
+            <div class="csec">Cost</div>
+            <div class="cg">
+                <span class="hd">Item</span><span class="hd r">Cost</span><span class="hd r">Quantity</span><span class="hd r">Total</span>
+                <span class="nm">Court</span><input id="cpCourt" data-kind="price" type="text" inputmode="decimal" maxlength="8" autocomplete="off" aria-label="Court price"><input id="cqCourt" data-kind="qty" type="text" inputmode="numeric" maxlength="4" autocomplete="off" aria-label="Court quantity"><span class="tot" id="ctCourt"></span>
+                <span class="nm shuttle">Shuttlecock<small class="sub">Tube of 12 &middot; <span id="cTubeEach">0.00 each</span></small></span><input class="shuttle" id="cTube" data-kind="price" type="text" inputmode="decimal" maxlength="8" autocomplete="off" aria-label="Shuttlecock tube price (12 shuttlecocks)"><input class="shuttle" id="cqShuttle" data-kind="qty" type="text" inputmode="numeric" maxlength="4" autocomplete="off" aria-label="Shuttlecock quantity"><span class="tot shuttle" id="ctShuttle"></span>
+            </div>
+            <div class="csum"><span>Cost</span><b id="cCost">0.00</b></div>
+
+            <div id="cRes" class="pos"><span>Profit</span><span id="cProfit">0.00</span></div>
+
+            <div id="cPay" hidden>
+                <div class="payline"><span id="cPayLabel">Cost + profit share</span><b id="cPayAmt">0.00</b></div>
+                <div class="payline sub">
+                    <label for="cShare">Cost + Profit &times;</label>
+                    <select id="cShare" aria-label="Share of profit"></select>
+                </div>
+            </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="sessionOverlay">
+        <div id="sessionDialog" role="dialog" aria-modal="true" aria-labelledby="sessionTitle">
+            <div class="sesshead">
+                <div class="sesssteps" id="sessSteps" hidden><span id="sessStep1Tag" class="on">1 Date</span><span id="sessStep2Tag">2 Players</span></div>
+                <button type="button" class="sesshist" id="btnSessHist" hidden><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 8a5.5 5.5 0 1 0 1.7-4M2.5 2.5v3h3M8 5v3.2l2 1.3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Copy past session</button>
+            </div>
+            <p id="sessionTitle">New session</p>
+            <p id="sessionSub">Choose the date of the session. It starts with an empty list.</p>
+            <div id="sessPick" hidden></div>
+            <div id="sessStep1">
+            <div class="sessport" id="sessSports" role="group" aria-label="Sport" hidden></div>
+            <div class="daywrap"><button type="button" class="dnav dprev" id="dayPrev" aria-label="Earlier days" hidden><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3L5 8l5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="daystrip" id="dayStrip" role="group" aria-label="Session date"></div><button type="button" class="dnav dnext" id="dayNext" aria-label="Later days" hidden><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
+            <button type="button" class="linkbtn" id="calToggle" aria-expanded="false">More dates</button>
+            <div id="calFull" hidden>
+            <div class="calnav">
+                <button type="button" id="sessCalPrev" aria-label="Previous month"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3L5 8l5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                <b id="sessCalMonth"></b>
+                <button type="button" id="sessCalNext" aria-label="Next month"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            </div>
+            <div class="calgrid" id="sessCalGrid" role="grid" aria-label="Session date"></div>
+            <p class="callegend">Dots are days that already have a session.</p>
+            </div>
+            <p class="calpick" id="calPick"></p>
+            <div class="sessfields">
+                <label for="sessLocation">Location</label>
+                <input id="sessLocation" type="text" maxlength="60" autocomplete="off" placeholder="e.g. Sports Hall A">
+                <div class="sfrow">
+                    <div><label for="sessStart">Start time</label><input id="sessStart" type="time" autocomplete="off"></div>
+                    <div><label for="sessEnd">End time</label><input id="sessEnd" type="time" autocomplete="off"></div>
+                </div>
+                <div class="sfrow">
+                    <div><label for="sessCourt">Court cost (RM)</label><input id="sessCourt" data-kind="price" type="text" inputmode="decimal" maxlength="8" autocomplete="off" placeholder="0.00"></div>
+                    <div><label for="sessCourtQty">Court quantity</label><input id="sessCourtQty" data-kind="qty" type="text" inputmode="numeric" maxlength="2" autocomplete="off" placeholder="1"></div>
+                </div>
+                <label for="sessDesc">Description</label>
+                <textarea id="sessDesc" rows="3" maxlength="1000" placeholder="Anything players should know (optional)"></textarea>
+            </div>
+            </div>
+            <div id="sessStep2" hidden>
+                <div class="srcdate"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="3" width="12" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M2 6.5h12M5.5 1.8v2.6M10.5 1.8v2.6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><b id="srcDate"></b></div>
+                <div class="srcfrom"><span>From</span><div id="srcSessions" class="tagrow"></div></div>
+                <div class="srcfrom" id="srcTagsRow" hidden><span>Tags</span><div id="srcTags" class="tagrow"></div></div>
+                <input id="srcSearch" type="text" maxlength="60" placeholder="Search name or link" aria-label="Search players" autocomplete="off">
+                <div class="srcinfo"><span class="srcl"><span id="srcCount">0 ticked</span><button type="button" id="srcAll">Tick all</button></span><span>Last joined first</span></div>
+                <div id="srcList"></div>
+            </div>
+            <div class="row" id="sessButtons">
+                <button type="button" id="btnSessionCancel">Cancel</button>
+                <button type="button" id="btnSessionSkip" hidden>Skip</button>
+                <button type="button" id="btnSessionCreate" class="primary">Create session</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="txOverlay">
+        <div id="txDialog" role="dialog" aria-modal="true" aria-labelledby="txTitle">
+            <p id="txTitle"></p>
+            <p id="txSub"></p>
+            <label for="txAmount">Amount (RM)</label>
+            <input id="txAmount" data-kind="price" type="text" inputmode="decimal" maxlength="8" autocomplete="off" placeholder="0.00">
+            <label for="txRemark">Remark</label>
+            <input id="txRemark" type="text" maxlength="100" autocomplete="off" placeholder="What is it for?" enterkeyhint="done">
+            <div class="row">
+                <button type="button" id="btnTxCancel">Cancel</button>
+                <button type="button" id="btnTxConfirm" class="primary"></button>
+            </div>
+        </div>
+    </div>
+
+    <div id="histOverlay">
+        <div id="histDialog" role="dialog" aria-modal="true" aria-labelledby="histTitle">
+            <section class="hist" id="history">
+                <h2><span id="histTitle">Session history</span> <span id="histNote">last 30 sessions</span></h2>
+                <div class="histtabs" id="histTabs" role="tablist"><button type="button" role="tab" id="histTabUp" data-tab="upcoming">Upcoming</button><button type="button" role="tab" id="histTabPast" data-tab="past">Past</button></div>
+                <ul id="histList"></ul>
+                <p class="older" id="older" hidden></p>
+            </section>
+            <div class="row"><button type="button" id="btnHistClose" class="primary">Close</button></div>
+        </div>
+    </div>
+
+    <div id="viewOverlay">
+        <div id="viewDialog" role="dialog" aria-modal="true" aria-labelledby="viewHead">
+            <p id="viewHead">Session details</p>
+            <div id="viewInfo"></div>
+            <div id="viewDescWrap" hidden>
+                <div class="vsec">Description</div>
+                <div id="viewDesc"></div>
+            </div>
+            <div class="vsec">Who came</div>
+            <p id="viewSub"></p>
+            <div id="viewList" class="avview"></div>
+            <div class="row"><button type="button" id="btnViewClose" class="primary">Close</button></div>
+        </div>
+    </div>
+
+    <div id="deleteOverlay">
+        <div id="deleteDialog" role="dialog" aria-modal="true" aria-labelledby="deleteTitle">
+            <p id="deleteTitle"></p>
+            <p id="deleteSub"></p>
+            <div class="row">
+                <button type="button" id="btnDeleteCancel">Cancel</button>
+                <button type="button" id="btnDeleteConfirm" class="danger">Delete session</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="invalid">
+        <h1>This link isn't valid</h1>
+        <p>Open the personal link you were given, for example pickleball/fees.html?u=your-code. Ask for a new one if it still doesn't work.</p>
+    </div>
+
+    <div id="overlay">
+        <div id="dialog" role="dialog" aria-modal="true" aria-labelledby="dlgTitle">
+            <p id="dlgTitle"></p>
+            <p id="dlgSub"></p>
+            <input id="dlgInput" type="text" maxlength="60" autocomplete="off" aria-label="Name" placeholder="Name" enterkeyhint="done">
+            <input id="dlgInput2" type="text" maxlength="60" autocomplete="off" aria-label="Unique link" placeholder="Unique link" enterkeyhint="done">
+            <div class="gpick" id="dlgGender" role="group" aria-label="Gender" hidden>
+                <button type="button" data-g="M" class="m">&#9794; Male</button>
+                <button type="button" data-g="F" class="f">&#9792; Female</button>
+            </div>
+            <div class="row">
+                <button type="button" id="btnDlgRemove" hidden>Remove</button>
+                <button type="button" id="btnCancel">Cancel</button>
+                <button type="button" id="btnConfirm" class="primary"></button>
+            </div>
+        </div>
+    </div>
+
+    <div id="qrOverlay">
+        <img id="qrImg" alt="QR code for receiving payment">
+        <button type="button" id="btnQrClose" class="primary">Close</button>
+    </div>
+</body>
+</html>

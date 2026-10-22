@@ -1,0 +1,731 @@
+/* The sessions page of every sport, on top of fees.css: total balance, session bar, history, new-session popup. */
+
+/* Total balance in the green header */
+.bal { display: flex; justify-content: space-between; align-items: baseline; margin-top: 12px; }
+.bal span { font-size: 12px; color: var(--hero-muted); }
+.bal b { font-size: 24px; font-weight: 500; color: var(--hero-text); }
+.bal b.neg { color: #fecaca; }
+
+/* Current session and the button that starts another */
+.session { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: 0 0 12px;
+           padding: 10px 14px; background: var(--card); border: 1px solid var(--line); border-radius: 14px; }
+.session .slabel { font-size: 12px; color: var(--muted); }
+.session b { font-size: 15px; font-weight: 500; }
+/* When and where the current session is, and what the host wrote about it */
+.sdetail { margin-top: 2px; font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
+.sdetail .sddesc { margin-top: 1px; }
+.session button { flex: none; padding: 8px 14px; font-size: 14px; }
+
+/* While there is no session yet, the list controls stay out of the way */
+#listTools[hidden] { display: none; }
+
+/* History: date on the left, profit on the right */
+.hist { margin-top: 22px; }
+.hist h2 { display: flex; justify-content: space-between; align-items: baseline; font-size: 15px; font-weight: 500;
+           color: var(--green-text); margin: 0 0 8px; }
+.hist h2 span { font-size: 12px; font-weight: 400; color: var(--muted); }
+.hist ul { list-style: none; margin: 0; padding: 0; background: var(--card); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+.hist li { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 11px 14px; font-size: 14px; }
+.hist li + li { border-top: 1px solid var(--line); }
+.hist .cur { font-style: normal; font-size: 11px; margin-left: 6px; padding: 2px 8px; border-radius: 99px;
+             background: var(--paid-chip); color: var(--paid-chip-text); }
+.hist .pr { font-weight: 500; white-space: nowrap; }
+.hist .pr.pos { color: var(--green-text); }
+.hist .pr.neg { color: var(--unpaid-chip-text); }
+.hist .older { margin: 8px 2px 0; font-size: 12px; color: var(--muted); }
+
+/* New session popup (same look as the other popups) */
+#sessionOverlay, #editOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); align-items: center;
+                  justify-content: center; padding: 16px; z-index: 10; }
+#sessionDialog, #editDialog { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 20px;
+                 width: 100%; max-width: 340px; }
+#sessionTitle, #editTitle { font-size: 17px; font-weight: 500; margin: 0 0 4px; }
+#sessionSub, #editSub { font-size: 14px; color: var(--muted); margin: 0 0 14px; }
+#sessionSub.err, #editSub.err { color: var(--unpaid-text); }
+/* Month calendar for picking the session date */
+.calnav { display: flex; justify-content: space-between; align-items: center; margin: 0 0 6px; }
+.calnav b { font-weight: 500; font-size: 15px; }
+.calnav button { width: 34px; height: 34px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; }
+.calnav svg { width: 16px; height: 16px; }
+.calgrid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
+.calgrid .wd { font-size: 11px; color: var(--muted); padding: 3px 0; }
+.calgrid .day { position: relative; height: 36px; padding: 0; border: none; border-radius: 50%; background: transparent; color: var(--text); font-size: 14px; }
+.calgrid .day:hover { background: var(--field); }
+.calgrid .day.today { box-shadow: inset 0 0 0 1.5px var(--accent); }
+.calgrid .day.sel, .calgrid .day.sel:hover { background: var(--accent); color: var(--accent-text); }
+.calgrid .day.past { color: var(--muted); opacity: .4; cursor: not-allowed; background: transparent; }
+.calgrid .day.has::after { content: ''; position: absolute; left: 50%; bottom: 5px; width: 4px; height: 4px; margin-left: -2px; border-radius: 50%; background: var(--green-text); }
+.calpick { margin: 10px 0 2px; font-size: 14px; text-align: center; color: var(--muted); }
+.calpick b { color: var(--text); font-weight: 500; }
+.callegend { margin: 0 0 14px; font-size: 11px; text-align: center; color: var(--muted); }
+
+
+/* Session bar buttons and the delete popup */
+.sbtns { display: flex; gap: 8px; flex: none; }
+.danger-outline { padding: 8px 12px; font-size: 14px; color: var(--unpaid-chip-text); border-color: var(--unpaid-line); }
+button.danger { background: #b42318; color: #ffffff; border-color: #b42318; }
+.hist .del { flex: none; width: 28px; height: 28px; padding: 0; margin-left: 8px; display: inline-flex; align-items: center; justify-content: center;
+             color: var(--unpaid-chip-text); border: 1px solid var(--unpaid-line); border-radius: 8px; background: var(--card); }
+.hist .del svg { width: 15px; height: 15px; }
+.hist .right { display: flex; align-items: center; }
+#deleteOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); align-items: center;
+                 justify-content: center; padding: 16px; z-index: 10; }
+#deleteDialog { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 20px;
+                width: 100%; max-width: 340px; }
+#deleteTitle { font-size: 17px; font-weight: 500; margin: 0 0 4px; overflow-wrap: anywhere; }
+#deleteSub { font-size: 14px; color: var(--muted); margin: 0 0 18px; }
+#deleteSub.err { color: var(--unpaid-text); }
+
+/* Deposit and withdraw buttons under the total balance */
+.balbtns { display: flex; gap: 8px; margin: 10px 0 0; }
+.balbtns button { padding: 6px 14px; font-size: 13px; border: none; border-radius: 8px; background: rgba(255,255,255,.16); color: var(--hero-text); }
+body.readonly .balbtns { display: none; }
+
+/* Deposit / withdraw popup (same look as the other popups) */
+#txOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); align-items: center;
+             justify-content: center; padding: 16px; z-index: 10; }
+#txDialog { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 20px; width: 100%; max-width: 340px; }
+#txTitle { font-size: 17px; font-weight: 500; margin: 0 0 4px; }
+#txSub { font-size: 14px; color: var(--muted); margin: 0 0 14px; }
+#txSub.err { color: var(--unpaid-text); }
+#txDialog label { display: block; font-size: 12px; color: var(--muted); margin: 0 0 3px; }
+#txDialog input { display: block; width: 100%; font: inherit; font-size: 16px; padding: 9px 12px; margin: 0 0 10px;
+                  background: var(--field); color: var(--text); border: 1px solid var(--line); border-radius: 10px; }
+
+/* Deposits and withdrawals list: remark and date on the left, amount on the right */
+.hist li .what { min-width: 0; display: flex; flex-direction: column; }
+.hist li .what span { overflow-wrap: anywhere; }
+.hist li .what small { font-size: 11px; color: var(--muted); }
+
+/* History rows: view button for everyone, "Make current" for the owner */
+.hist .view { flex: none; width: 28px; height: 28px; padding: 0; margin-left: 8px; display: inline-flex; align-items: center; justify-content: center;
+              color: var(--green-text); border: 1px solid var(--line); border-radius: 8px; background: var(--card); }
+.hist .view svg { width: 16px; height: 16px; }
+.hist .right .del { margin-left: 6px; }
+.hist .mk { align-self: flex-start; padding: 0; margin-top: 2px; border: none; border-radius: 0; background: none; font-size: 12px;
+            color: var(--green-text); text-decoration: underline; }
+body.readonly .hist .mk { display: none; }
+/* ...except for the Sub Admin, who may pick a session from the history */
+body.readonly.admin .hist .mk { display: inline-block; }
+
+/* Access codes in the Master Admin's profile popup */
+#profCodes { flex-direction: column; }
+#profCodes label { display: block; font-size: 12px; color: var(--muted); margin: 8px 0 3px; }
+#profCodes input { display: block; width: 100%; box-sizing: border-box; font: inherit; font-size: 18px; letter-spacing: .3em; padding: 8px 12px;
+                   background: var(--field); color: var(--text); border: 1px solid var(--line); border-radius: 10px; }
+
+/* Who came on a day */
+#viewOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); align-items: center;
+               justify-content: center; padding: 16px; z-index: 10; }
+#viewDialog { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 20px; width: 100%; max-width: 340px; }
+#viewTitle { font-size: 17px; font-weight: 500; margin: 0 0 4px; overflow-wrap: anywhere; }
+#viewSub { font-size: 14px; color: var(--muted); margin: 0 0 12px; }
+#viewSub.err { color: var(--unpaid-text); }
+#viewList { list-style: none; margin: 0 0 6px; padding: 0; max-height: 50vh; overflow-y: auto; }
+#viewList li { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 8px 2px; font-size: 14px; }
+#viewList li + li { border-top: 1px solid var(--line); }
+#viewList .chip { font-size: 11px; padding: 2px 9px; border-radius: 99px; white-space: nowrap; }
+#viewList .chip.paid { background: var(--paid-chip); color: var(--paid-chip-text); }
+#viewList .chip.unpaid { background: var(--unpaid-chip); color: var(--unpaid-chip-text); }
+
+/* The header scrolls away with the page instead of staying at the top */
+.top { position: static; }
+
+/* Search box with suggestions, new-player form, ranking */
+.sbox { position: relative; flex: 1; min-width: 0; display: flex; }
+.sbox input { width: 100%; }
+#pDrop { position: absolute; left: 0; right: 0; top: calc(100% + 4px); z-index: 8; background: var(--card); border: 1px solid var(--line);
+         border-radius: 12px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,.14); }
+#pDrop[hidden] { display: none; }
+#pDrop button { display: flex; width: 100%; justify-content: space-between; align-items: center; gap: 8px; border: none; border-radius: 0;
+                background: var(--card); color: var(--text); padding: 9px 12px; text-align: left; }
+#pDrop button + button, #pDrop .none { border-top: 1px solid var(--line); }
+#pDrop .nm { display: block; font-weight: 500; overflow-wrap: anywhere; }
+#pDrop .lk { display: block; font-size: 11px; color: var(--muted); overflow-wrap: anywhere; }
+#pDrop .gm { flex: none; font-size: 11px; color: var(--muted); white-space: nowrap; }
+#pDrop button.make { background: var(--paid-bg); color: var(--paid-text); }
+#pDrop button.make .plus { flex: none; width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: var(--accent-text);
+                           display: inline-flex; align-items: center; justify-content: center; font-size: 16px; }
+#pDrop button.make .sub { display: block; font-size: 11px; opacity: .8; }
+#pDrop button.make .txt { flex: 1; min-width: 0; }
+#pDrop button.on { opacity: .5; }
+#pDrop .none { padding: 10px 12px; font-size: 12px; color: var(--muted); }
+#pForm { margin: 0 0 10px; padding: 12px; background: var(--card); border: 1px solid var(--paid-line); border-radius: 14px; }
+#pForm > b { display: block; font-weight: 500; margin: 0 0 8px; }
+#pForm label { display: block; font-size: 12px; color: var(--muted); margin: 0 0 3px; }
+#pForm input { display: block; width: 100%; font: inherit; font-size: 16px; padding: 9px 12px; margin: 0 0 8px;
+               background: var(--field); color: var(--text); border: 1px solid var(--line); border-radius: 10px; }
+#pForm .pfnote { margin: -2px 0 8px; font-size: 11px; color: var(--muted); }
+#pfErr { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin: 0 0 8px; padding: 7px 10px; font-size: 12px;
+         border-radius: 10px; background: var(--unpaid-bg); color: var(--unpaid-text); border: 1px solid var(--unpaid-line); }
+#pfErr[hidden] { display: none; }
+#pfErr button { flex: none; padding: 3px 9px; font-size: 11px; border-radius: 8px; }
+
+/* Most participated players: podium for the top 3, list for 4th to 10th */
+.rk-title { display: inline-flex; align-items: center; gap: 6px; }
+.rk-title svg { width: 18px; height: 18px; color: #BA7517; }
+.rk-card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px 12px 6px; overflow: hidden; }
+.rk-pod { display: grid; grid-template-columns: 1fr 1.15fr 1fr; gap: 8px; align-items: end; margin: 0 0 10px; }
+.rk-pc { display: flex; flex-direction: column; align-items: center; text-align: center; min-width: 0; }
+.rk-av { position: relative; width: 46px; height: 46px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+         font-weight: 500; font-size: 15px; animation: rkPop .55s ease both; }
+.rk-av.big { width: 54px; height: 54px; margin-top: 14px; }
+.rk-crown { position: absolute; top: -19px; left: 50%; width: 22px; height: 22px; margin-left: -11px; color: #EF9F27; animation: rkBob 2.2s ease-in-out infinite; }
+.rk-nm { margin-top: 5px; font-size: 13px; font-weight: 500; overflow-wrap: anywhere; }
+.rk-lk { font-size: 10px; color: var(--muted); overflow-wrap: anywhere; }
+.rk-ped { width: 100%; margin-top: 6px; padding-top: 6px; border-radius: 10px 10px 0 0; display: flex; flex-direction: column; align-items: center;
+          animation: rkUp .8s cubic-bezier(.2,.8,.2,1) both; }
+.rk-ped .n { font-size: 22px; font-weight: 500; line-height: 1; }
+.rk-ped .gm { font-size: 11px; margin-top: 2px; }
+#rankList { list-style: none; margin: 0; padding: 0; background: none; border: none; border-radius: 0; }
+#rankList li { display: flex; align-items: center; gap: 10px; padding: 8px 2px; border-top: 1px solid var(--line); animation: rkRise .5s ease both; }
+#rankList .no { flex: none; width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
+                font-size: 11px; font-weight: 500; background: var(--field); color: var(--green-text); }
+#rankList .body { flex: 1; min-width: 0; }
+#rankList .line { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+#rankList .line b { font-weight: 500; overflow-wrap: anywhere; }
+#rankList .line span { font-size: 12px; color: var(--muted); white-space: nowrap; }
+#rankList .line span b { color: var(--text); }
+#rankList .bar { display: block; height: 6px; border-radius: 99px; background: var(--field); margin-top: 4px; overflow: hidden; }
+#rankList .bar i { display: block; height: 100%; border-radius: 99px; background: var(--green-text); opacity: .6; position: relative; overflow: hidden;
+                   animation: rkGrow .9s cubic-bezier(.2,.8,.2,1) both; }
+#rankList .bar i::after { content: ''; position: absolute; top: 0; bottom: 0; width: 40%; background: linear-gradient(90deg, transparent, rgba(255,255,255,.55), transparent);
+                          animation: rkShine 2.6s ease-in-out 1.2s infinite; }
+#rankList .lk { display: block; font-size: 10px; color: var(--muted); margin-top: 2px; overflow-wrap: anywhere; }
+@keyframes rkRise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes rkGrow { from { width: 0; } }
+@keyframes rkPop { 0% { transform: scale(.3); opacity: 0; } 70% { transform: scale(1.15); } 100% { transform: scale(1); opacity: 1; } }
+@keyframes rkUp { from { height: 0; opacity: .4; } }
+@keyframes rkBob { 0%, 100% { transform: translateY(0) rotate(-6deg); } 50% { transform: translateY(-4px) rotate(6deg); } }
+@keyframes rkShine { from { transform: translateX(-100%); } to { transform: translateX(250%); } }
+@media (prefers-reduced-motion: reduce) { .rk-av, .rk-crown, .rk-ped, #rankList li, #rankList .bar i, #rankList .bar i::after { animation: none !important; } }
+.hist h2 .rk-title { font-size: 15px; font-weight: 500; color: var(--green-text); }
+
+/* New session, step 2: bring players along from earlier sessions */
+.sesssteps { display: flex; gap: 6px; margin: 0 0 8px; font-size: 11px; }
+.sesssteps[hidden] { display: none; }
+.sesssteps span { padding: 2px 9px; border-radius: 99px; background: var(--field); color: var(--green-text); }
+.sesssteps span.on { background: var(--accent); color: var(--accent-text); }
+#sessStep2[hidden], #sessStep1[hidden] { display: none; }
+/* The sport choice at the top of the new-session sheet (a host who runs more than one sport) */
+.sportchip { flex: none; font-size: 14px; line-height: 1.2; padding: 6px 14px; border-radius: 999px; cursor: pointer;
+             border: 1px solid var(--line); background: var(--field); color: var(--text); }
+.sportchip.on { border-color: var(--accent); background: var(--paid-bg); color: var(--green-text); }
+.sessport { display: flex; flex-wrap: wrap; gap: 6px; margin: 2px 0 10px; }
+.sessport[hidden] { display: none; }
+/* A small picture of a sport (history list, calendar); its colour says which sport it is */
+.spicon { display: inline-flex; flex: none; width: 14px; height: 14px; vertical-align: -2px; color: var(--muted); }
+.spicon svg { display: block; width: 100%; height: 100%; }
+.spicon.badminton { color: #16a34a; }
+.spicon.pickleball { color: #d97706; }
+.sportchip .spicon { margin-right: 6px; }
+button.tagfilter .spicon { margin-right: 5px; vertical-align: -2px; }
+.pmwho b .spicon, .rk-nm .spicon, #rankList .line b .spicon { margin-right: 5px; }
+#rankFilter { margin: 0 0 12px; }
+/* Every session in the history says which sport it belongs to (a host who runs more than one sport also sees them all in one list) */
+.hist li .what i.sp { display: inline-flex; align-items: center; gap: 4px; margin-left: 8px; padding: 1px 8px 1px 6px; border-radius: 999px; font-size: 11px; font-style: normal; font-weight: 500;
+                      background: var(--field); color: var(--muted); border: 1px solid var(--line); vertical-align: 1px; }
+.hist li.other .what .mk { align-self: flex-start; }
+
+/* New session, page 1: location, then start and end time side by side, the description below */
+.sessfields { margin-top: 12px; }
+.sessfields label { display: block; font-size: 12px; color: var(--muted); margin: 0 0 3px; }
+.sessfields .sfrow { display: flex; gap: 8px; margin: 8px 0; }
+.sessfields .sfrow > div { flex: 1 1 0; min-width: 0; }
+.sessfields input.bad { border-color: var(--unpaid-text); }
+.sessfields input, .sessfields textarea { display: block; width: 100%; box-sizing: border-box; font: inherit; font-size: 16px; padding: 8px 12px;
+             background: var(--field); color: var(--text); border: 1px solid var(--line); border-radius: 10px; }
+.sessfields textarea { resize: vertical; min-height: 56px; margin: 0; }
+#srcSearch { display: block; width: 100%; font: inherit; font-size: 16px; padding: 8px 12px; background: var(--field); color: var(--text);
+             border: 1px solid var(--line); border-radius: 10px; }
+.srcinfo { display: flex; justify-content: space-between; align-items: center; margin: 6px 0 6px; font-size: 12px; color: var(--muted); }
+#srcList { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; max-height: 300px; overflow-y: auto; margin: 0 0 4px; }
+#srcList .msg { padding: 12px; font-size: 13px; color: var(--muted); }
+#srcList button { display: flex; width: 100%; align-items: center; gap: 10px; border: none; border-radius: 0; padding: 9px 10px; text-align: left;
+                  background: var(--card); color: var(--text); }
+#srcList button + button { border-top: 1px solid var(--line); }
+#srcList button.on { background: var(--paid-bg); }
+#srcList .sq { flex: none; width: 22px; height: 22px; border-radius: 7px; display: inline-flex; align-items: center; justify-content: center;
+               border: 1.5px solid var(--line); background: var(--card); color: var(--accent-text); }
+#srcList button.on .sq { background: var(--accent); border-color: var(--accent); }
+#srcList .sq svg { width: 13px; height: 13px; }
+#srcList .srcwho { flex: 1; min-width: 0; }
+#srcList .nm { display: block; font-weight: 500; overflow-wrap: anywhere; }
+#srcList .lk { display: block; font-size: 11px; color: var(--muted); overflow-wrap: anywhere; }
+#srcList .gm { flex: none; font-size: 11px; line-height: 1.35; text-align: right; color: var(--muted); white-space: nowrap; }
+#sessButtons, #editButtons { flex-wrap: wrap; }
+
+/* Guest view: amounts are shown as hashes */
+.hist .pr.hash { color: var(--muted); letter-spacing: 1px; }
+
+/* The other views of the page (Leaderboard, Player management), shown from the header menu in place of the fees list */
+.panelview { display: none; }
+
+body[data-view="leaderboard"] #pvLeaderboard, body[data-view="players"] #pvPlayers { display: block; }
+.pvempty { margin: 18px 2px; font-size: 14px; color: var(--muted); }
+.panelview .hist:first-child { margin-top: 4px; }
+
+/* Player management: search, a list of every known player, a popup to add or edit one */
+#pmMsg { margin: 0 0 12px; padding: 10px 12px; border-radius: 10px; font-size: 14px; display: none;
+         background: var(--unpaid-bg); color: var(--unpaid-text); border: 1px solid var(--unpaid-line); }
+#pvPlayers .addrow input { font: inherit; font-size: 16px; }
+#pvPlayers .addrow button { flex: none; }
+.pmcount { margin: 0 2px 8px; font-size: 12px; color: var(--muted); }
+#pmList { list-style: none; margin: 0; padding: 0; background: var(--card); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+#pmList:empty { display: none; }
+#pmList li { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 12px; }
+#pmList li + li { border-top: 1px solid var(--line); }
+#pmList .pmwho { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+#pmList .pmwho b { font-weight: 500; font-size: 15px; overflow-wrap: anywhere; }
+#pmList .pmlk { font-size: 12px; color: var(--green-text); overflow-wrap: anywhere; }
+#pmList .pmwho small { font-size: 11px; color: var(--muted); }
+#pmList .pmedit { flex: none; width: 34px; height: 34px; padding: 0; display: inline-flex; align-items: center; justify-content: center;
+                  color: var(--green-text); border: 1px solid var(--line); border-radius: 10px; background: var(--card); }
+#pmList .pmedit svg { width: 16px; height: 16px; }
+#pmOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); align-items: center; justify-content: center; padding: 16px; z-index: 10; }
+#pmDialog { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 20px; width: 100%; max-width: 340px; }
+#pmTitle { font-size: 17px; font-weight: 500; margin: 0 0 4px; }
+#pmSub { font-size: 13px; color: var(--muted); margin: 0 0 12px; }
+#pmSub.err { color: var(--unpaid-text); }
+#pmDialog label { display: block; font-size: 12px; color: var(--muted); margin: 0 0 3px; }
+#pmDialog input { display: block; width: 100%; font: inherit; font-size: 16px; padding: 9px 12px; margin: 0 0 10px;
+                  background: var(--field); color: var(--text); border: 1px solid var(--line); border-radius: 10px; }
+
+/* Player tags: chips under a name, a filter row in player management, the tag box in the popup */
+.tagrow { display: flex; flex-wrap: wrap; gap: 5px; margin: 4px 0 0; }
+.tagrow:empty { display: none; }
+.tagrow[hidden] { display: none; }
+#pvPlayers #pmFilter { margin: 0 0 8px; }
+.tagchip { display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 99px; font-size: 11px; line-height: 1.5;
+           background: var(--field); color: var(--green-text); border: 1px solid var(--line); }
+.tagchip.free { background: var(--paid-chip); color: var(--paid-chip-text); border-color: var(--paid-line); }
+button.tagchip { cursor: pointer; padding: 2px 9px; font-size: 11px; border-radius: 99px; }
+button.tagchip.add { background: transparent; border-style: dashed; color: var(--muted); }
+button.tagfilter { padding: 4px 10px; font-size: 12px; border-radius: 99px; background: var(--card); color: var(--text); border: 1px solid var(--line); }
+button.tagfilter.on { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+#pmDialog label span { opacity: .8; }
+#pmDialog #pmTagChips { margin: 0 0 6px; }
+#pmDialog #pmTagSuggest { margin: -4px 0 12px; }
+#pmDialog { max-height: 92vh; overflow-y: auto; }
+
+/* In the search box: adding a guest (no unique link) */
+#pDrop button.make + button.make { border-top: 1px solid var(--line); }
+
+/* The guest page (guest.html) shows the current session's player list and the session history (dates, with "RM ####" in place of
+   each profit; the eye button shows who came), but no balance and no deposits and withdrawals */
+body[data-guest] .bal, body[data-guest] #ledgerBox { display: none !important; }
+
+/* Dragging a tag onto a player (player management) */
+button.tagfilter.drag { cursor: grab; touch-action: none; -webkit-user-select: none; user-select: none; }
+.tagghost { position: fixed; z-index: 40; margin: 0; pointer-events: none; transform: scale(1.1); opacity: .95;
+            background: var(--accent); color: var(--accent-text); border: 1px solid var(--accent); box-shadow: 0 4px 12px rgba(0,0,0,.25); }
+body.tagdragging { -webkit-user-select: none; user-select: none; cursor: grabbing; }
+#pmList li.pmdrop { background: var(--field); box-shadow: inset 0 0 0 2px var(--accent); }
+.pmcount.err { color: var(--unpaid-text); }
+#pmHint { margin: 4px 2px 8px; }
+
+/* New session, step 2: the date of the new session, and Tick all */
+.srcdate { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; padding: 8px 12px; background: var(--field); border: 1px solid var(--line); border-radius: 12px; color: var(--green-text); }
+.srcdate svg { width: 18px; height: 18px; flex: none; }
+.srcdate b { font-size: 15px; font-weight: 500; color: var(--text); }
+.srcl { display: inline-flex; align-items: center; gap: 10px; }
+#srcAll { padding: 3px 10px; font-size: 12px; border-radius: 99px; color: var(--green-text); background: var(--card); border: 1px solid var(--line); }
+#srcAll[hidden] { display: none; }
+
+/* New session, step 2: pick an earlier session to bring its players along */
+.srcfrom { display: flex; align-items: flex-start; gap: 8px; margin: 0 0 8px; font-size: 12px; color: var(--muted); }
+.srcfrom > span { padding-top: 5px; flex: none; }
+.srcfrom .tagrow { margin: 0; flex: 1; max-height: 74px; overflow-y: auto; }
+
+/* ---- Pickleball only: the new-session bottom sheet and its day strip (the rest of the design is shared, see fees.css) ---- */
+#sessionOverlay, #editOverlay { align-items: flex-end; padding: 0; }
+#sessionDialog, #editDialog { max-width: 480px; max-height: 92vh; overflow-y: auto; border-radius: 22px 22px 0 0; border-bottom: none; padding-bottom: calc(16px + env(safe-area-inset-bottom));
+                 animation: sheetUp .22s ease; }
+#sessionDialog::before, #editDialog::before { content: ''; display: block; width: 38px; height: 4px; border-radius: 2px; background: var(--line); margin: -8px auto 12px; }
+#sessButtons, #editButtons { position: sticky; bottom: -16px; background: var(--card); padding: 10px 0 2px; }
+
+/* New session date: a strip of the next days */
+.daystrip { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 2px 0 8px; margin: 0 -2px; }
+.daystrip::-webkit-scrollbar { display: none; }
+.dchip { flex: none; min-width: 52px; display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 7px 4px; border-radius: 14px;
+         background: var(--card); border: 1px solid var(--line); color: var(--text); font-size: 11px; }
+.dchip b { font-size: 16px; font-weight: 500; }
+.dchip span { color: var(--muted); }
+.dchip.sel { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+.dchip.sel span { color: var(--accent-text); opacity: .85; }
+.dchip.has { position: relative; }
+.dchip.has::after { content: ''; position: absolute; left: 50%; bottom: 3px; width: 4px; height: 4px; margin-left: -2px; border-radius: 50%; background: var(--green-text); }
+.linkbtn { display: block; margin: 0 auto 8px; padding: 4px 10px; border: none; background: transparent; color: var(--green-text); font-size: 13px; text-decoration: underline; }
+
+/* Player management: the delete button next to the pencil */
+#pmList li { gap: 8px; }
+#pmList .pmdel { flex: none; width: 34px; height: 34px; padding: 0; display: inline-flex; align-items: center; justify-content: center;
+                 color: var(--unpaid-chip-text); border: 1px solid var(--unpaid-line); border-radius: 10px; background: var(--card); }
+#pmList .pmdel svg { width: 16px; height: 16px; }
+
+/* The male / female choice at the top of the suggestions under the search box */
+#pDrop .glabel { display: block; padding: 8px 12px 0; font-size: 12px; color: var(--muted); }
+#pDrop .gpick.inline { margin: 6px 12px 8px; }
+#pDrop .gpick.inline .gbtn { flex: 1; padding: 8px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); color: var(--muted); font-size: 14px; text-align: center; }
+#pDrop .gpick.inline .gbtn.on.m { background: #dbeafe; border-color: #2563eb; color: #1e40af; }
+#pDrop .gpick.inline .gbtn.on.f { background: #ffe4e6; border-color: #e11d48; color: #9f1239; }
+#pmDialog > label { display: block; font-size: 12px; color: var(--muted); margin: 8px 0 3px; }
+
+/* ---- Phones and tablets: polish found by checking every screen at 320, 375, 390 and 412 px wide, in light and dark ---- */
+
+/* The session card: the date gets a whole line of its own on a phone, with the two buttons under it (side by side the date broke into three lines at 320 px) */
+@media (max-width: 400px) {
+  .session { flex-wrap: wrap; row-gap: 8px; }
+  .session > div:first-child { flex: 1 1 100%; }
+  .session .sbtns { margin-left: auto; }
+}
+
+/* Taller dialogs follow the visible screen on an iPhone (100vh there counts the part behind Safari's toolbar); the vh lines above stay for older browsers */
+#pmDialog, #sessionDialog, #editDialog { max-height: 92dvh; }
+#viewList { max-height: 50dvh; }
+#qrOverlay img { max-height: calc(100dvh - 100px); }
+
+/* Time boxes: Safari draws an empty one with no height and the text centred unless told otherwise */
+.sessfields input[type="time"], #editDialog input[type="time"] { -webkit-appearance: none; appearance: none; min-height: 42px; text-align: left; }
+.sessfields input[type="time"]::-webkit-date-and-time-value { text-align: left; min-height: 1.2em; }
+
+/* The small details of the history list are a little larger (11px is hard to read on a phone) */
+.hist li .what small { font-size: 12px; }
+
+/* The ranking with no games yet shows only its sport chips and the message, not an empty card */
+.rk-card[hidden] { display: none; }
+
+/* The part to touch is larger than what is drawn (the buttons themselves do not move or grow) */
+.hist .view, .hist .del, .hist .mk, .hidebtn, .balbtns button { position: relative; }
+.hist .view::after, .hist .del::after { content: ''; position: absolute; top: -6px; bottom: -6px; left: -4px; right: -4px; }
+.hist .mk::after { content: ''; position: absolute; top: -10px; bottom: -10px; left: -6px; right: -10px; }
+.hidebtn::after { content: ''; position: absolute; top: -8px; bottom: -8px; left: -8px; right: -8px; }
+.balbtns button::after { content: ''; position: absolute; top: -8px; bottom: -8px; left: -4px; right: -4px; }
+
+/* Touch screens only (a mouse keeps the compact look): the chips and links get a finger-sized height, and the form text is 16px so that the page is not zoomed */
+@media (pointer: coarse) {
+  button.tagfilter { padding: 7px 13px; font-size: 13px; }
+  #srcAll { padding: 7px 13px; font-size: 13px; }
+  .linkbtn { padding: 10px 14px; }
+}
+
+/* The description keeps its spaces and new lines as the host typed them */
+.sdetail .sddesc { white-space: pre-wrap; }
+.hist li .what .dds { display: block; white-space: pre-wrap; overflow-wrap: anywhere; }
+.hist li .what .dpl { display: block; overflow-wrap: anywhere; }
+
+/* The details of a history row: cut after three lines when long, opened with Show more */
+.hist li .what .det { display: flex; flex-direction: column; min-width: 0; }
+.hist li .what .det.clamped { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden; }
+.hist li .what .detmore { align-self: flex-start; margin: 2px 0 0; padding: 0; border: 0; background: none; color: var(--green-text); font: inherit; font-size: 12px; text-decoration: underline; cursor: pointer; position: relative; }
+.hist li .what .detmore::after { content: ''; position: absolute; top: -8px; bottom: -8px; left: -6px; right: -10px; }
+.hist li .what .detmore[hidden] { display: none; }
+
+
+/* Edit tags (player management): rename a tag, or take it off every player */
+#pmTagsEdit { margin: -2px 2px 8px; }
+#pmTagsEdit[hidden] { display: none; }
+#tgOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); align-items: center; justify-content: center; padding: 16px; z-index: 10; }
+#tgDialog { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 20px; width: 100%; max-width: 340px; max-height: 92dvh; overflow-y: auto; }
+#tgTitle { font-size: 17px; font-weight: 500; margin: 0 0 4px; }
+#tgSub { font-size: 13px; color: var(--muted); margin: 0 0 10px; }
+#tgSub.err { color: var(--unpaid-text); }
+#tgList { list-style: none; margin: 0 0 12px; padding: 0; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+#tgList li { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; padding: 8px 10px; }
+#tgList li + li { border-top: 1px solid var(--line); }
+#tgList .tgname { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: 8px; }
+#tgList .tgname small { font-size: 12px; color: var(--muted); }
+#tgList .tgask { flex: 1 1 100%; font-size: 12px; color: var(--muted); order: 3; }
+#tgList .tgnone { color: var(--muted); font-size: 13px; }
+#tgList button { padding: 8px 12px; font-size: 14px; min-height: 36px; }
+#tgList button.icon { flex: none; width: 36px; height: 36px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 10px; }
+#tgList button.icon svg { width: 16px; height: 16px; }
+#tgList .tgren { color: var(--green-text); }
+#tgList .tgdel, #tgList .tgremove { color: var(--unpaid-chip-text); border-color: var(--unpaid-line); }
+#tgList input.tgin { flex: 1 1 100%; min-width: 0; font: inherit; font-size: 16px; padding: 8px 12px; margin: 0; background: var(--field); color: var(--text); border: 1px solid var(--line); border-radius: 10px; }
+#tgDialog .row { display: flex; }
+#tgDialog .row button { width: 100%; min-height: 44px; }
+#tgList .tgname { flex-wrap: wrap; } #tgList .tgname .tagchip { overflow-wrap: anywhere; }
+
+/* The info button of a history row opens the session's summary */
+.hist .info { flex: none; width: 28px; height: 28px; padding: 0; margin-left: 8px; display: inline-flex; align-items: center; justify-content: center;
+              color: var(--muted); border: 1px solid var(--line); border-radius: 8px; background: var(--card); }
+.hist .info svg { width: 16px; height: 16px; }
+#sumOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); align-items: center; justify-content: center; padding: 16px; z-index: 10; }
+#sumDialog { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 20px; width: 100%; max-width: 340px; }
+#sumTitle { font-size: 17px; font-weight: 500; margin: 0 0 4px; overflow-wrap: anywhere; }
+#sumSub { font-size: 13px; color: var(--muted); margin: 0 0 12px; overflow-wrap: anywhere; }
+#sumSub:empty { display: none; }
+#sumRows { margin: 0 0 14px; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.sumrow { display: flex; justify-content: space-between; gap: 12px; padding: 10px 14px; font-size: 15px; }
+.sumrow + .sumrow { border-top: 1px solid var(--line); }
+.sumrow span { color: var(--muted); }
+.sumrow b { font-weight: 500; }
+.sumrow.total { background: var(--field); }
+.sumrow b.pos { color: var(--green-text); }
+.sumrow b.neg { color: var(--unpaid-chip-text); }
+#sumDialog .row { display: flex; }
+#sumDialog .row button { width: 100%; min-height: 44px; }
+@media (max-width: 360px) {
+  .hist li { gap: 6px; padding-left: 12px; padding-right: 10px; }
+  .hist .info, .hist .view, .hist .del { width: 26px; height: 26px; margin-left: 4px; }
+  .hist .right .del { margin-left: 4px; }
+  .hist .pr { font-size: 13px; }
+  .hist li .what i.sp { white-space: nowrap; }
+}
+
+/* ---- The current session as one box, its three dots, View History, the floating plus ---- */
+.session { display: block; padding: 12px 14px; }
+.session .shead { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin: 0 0 6px; }
+.session .stools { display: flex; align-items: center; gap: 6px; flex: none; margin-left: auto; }   /* always at the right edge, also when the profit pill on the left is hidden (Sub Admin, guest) */
+.session .histbtn { display: inline-flex; align-items: center; gap: 5px; padding: 5px 11px; font-size: 12px; border-radius: 99px; color: var(--green-text); background: var(--field); border: 1px solid var(--line); }
+.session .histbtn[hidden] { display: none; }
+.session .histbtn svg { width: 14px; height: 14px; }
+.session .smore { position: relative; width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; color: var(--muted); }
+.session .smore[hidden] { display: none; }
+.session .smore::after { content: ''; position: absolute; inset: -6px; }
+.session .smore svg { width: 17px; height: 17px; }
+.smorewrap { position: relative; }
+#sessMenu { position: absolute; top: 38px; right: 0; z-index: 6; min-width: 180px; padding: 4px; background: var(--card); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 6px 20px rgba(0, 0, 0, .18); }
+#sessMenu[hidden] { display: none; }
+.session #sessMenu button { width: 100%; height: auto; min-height: 44px; padding: 8px 10px; display: flex; align-items: center; justify-content: flex-start; gap: 10px; border: none; border-radius: 8px; background: none; font-size: 14px; text-align: left; color: var(--text); }
+.session #sessMenu button:hover { background: var(--field); }
+.session #sessMenu svg { width: 17px; height: 17px; flex: none; }
+.session #sessMenu .dangeritem { color: var(--unpaid-chip-text); }
+.curtitle { font-size: 18px; font-weight: 500; line-height: 1.25; margin: 0 0 4px; overflow-wrap: anywhere; }
+.curtitle[hidden], .sline[hidden] { display: none; }
+.sline { display: flex; gap: 8px; align-items: flex-start; margin-top: 4px; font-size: 14px; overflow-wrap: anywhere; }
+.sline .sic { flex: none; display: inline-flex; margin-top: 2px; color: var(--muted); }
+.sline .sic svg { width: 16px; height: 16px; }
+.session .sline b { font-size: 15px; font-weight: 500; }
+.session .sdetail { margin-top: 9px; padding-top: 8px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+.sdetail .det { display: flex; flex-direction: column; min-width: 0; }
+.sdetail .det.clamped { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; }
+.sdetail .dds { display: block; white-space: pre-wrap; overflow-wrap: anywhere; }
+.sdetail .detmore { align-self: flex-start; margin: 3px 0 0; padding: 0; border: 0; background: none; color: var(--green-text); font: inherit; font-size: 13px; text-decoration: underline; cursor: pointer; position: relative; }
+.sdetail .detmore::after { content: ''; position: absolute; top: -8px; bottom: -8px; left: -6px; right: -10px; }
+.sdetail .detmore[hidden] { display: none; }
+body.readonly .smorewrap, body[data-guest] .smorewrap { display: none !important; }
+
+#btnNewSession.fab { position: fixed; right: 16px; bottom: calc(78px + env(safe-area-inset-bottom)); z-index: 9; width: 56px; height: 56px; padding: 0; border-radius: 50%;
+                     display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 300; line-height: 1; box-shadow: 0 6px 18px rgba(0, 0, 0, .3); }
+#btnNewSession.fab[hidden] { display: none; }
+body[data-view]:not([data-view="fees"]) #btnNewSession { display: none; }
+body.has-tabs main.feesview { padding-bottom: 72px; }
+
+/* View History popup */
+#histOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); align-items: center; justify-content: center; padding: 16px; z-index: 10; }
+#histDialog { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 16px; width: 100%; max-width: 420px; max-height: 86vh; max-height: 86dvh; overflow-y: auto; }
+#histDialog .hist { margin-top: 0; }
+#histDialog .row { display: flex; margin-top: 12px; }
+#histDialog .row button { width: 100%; min-height: 44px; }
+.hist li .what .htitle { font-size: 13px; font-weight: 500; color: var(--text); margin-top: 1px; overflow-wrap: anywhere; }
+
+/* History rows: title, time and place, one line each (the description is in the View popup) */
+.hist li .what .hl { display: flex; gap: 5px; align-items: flex-start; margin-top: 2px; font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
+.hist li .what .hl .hic { flex: none; display: inline-flex; margin-top: 2px; }
+.hist li .what .hl svg { width: 13px; height: 13px; }
+
+/* The View popup: the complete session details, then who came */
+#viewDialog { max-width: 380px; max-height: 90vh; max-height: 90dvh; overflow-y: auto; }
+#viewHead { font-size: 13px; color: var(--muted); margin: 0 0 8px; }
+.vtitle { font-size: 18px; font-weight: 500; line-height: 1.25; margin: 0 0 4px; overflow-wrap: anywhere; }
+.vl { display: flex; gap: 8px; align-items: flex-start; margin-top: 4px; font-size: 14px; overflow-wrap: anywhere; }
+.vl .hic { flex: none; display: inline-flex; margin-top: 2px; color: var(--muted); }
+.vl svg { width: 16px; height: 16px; }
+.vl.vdate { font-weight: 500; }
+.vsec { font-size: 12px; font-weight: 500; color: var(--muted); margin: 14px 0 5px; }
+#viewDesc { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.45; padding: 9px 11px; background: var(--field); border: 1px solid var(--line); border-radius: 10px; }
+#viewList { max-height: none; overflow: visible; }
+
+/* ---- Add players (several at once) ---- */
+#addOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); align-items: center; justify-content: center; padding: 16px; z-index: 10; }
+#addDialog { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 18px; width: 100%; max-width: 400px; max-height: 92vh; max-height: 92dvh; overflow-y: auto; }
+#addTitle { font-size: 17px; font-weight: 500; margin: 0 0 4px; }
+#addSub { font-size: 13px; color: var(--muted); margin: 0 0 10px; }
+#addSub.err { color: var(--unpaid-text); }
+#addButtons { display: flex; gap: 8px; margin-top: 10px; }
+#addButtons button { flex: 1; min-height: 44px; }
+#aSearch { display: block; width: 100%; font: inherit; font-size: 16px; padding: 8px 12px; background: var(--field); color: var(--text);
+             border: 1px solid var(--line); border-radius: 10px; }
+#addList { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; max-height: 300px; overflow-y: auto; margin: 0 0 4px; }
+#addList .msg { padding: 12px; font-size: 13px; color: var(--muted); }
+#addList button { display: flex; width: 100%; align-items: center; gap: 10px; border: none; border-radius: 0; padding: 9px 10px; text-align: left;
+                  background: var(--card); color: var(--text); }
+#addList button + button { border-top: 1px solid var(--line); }
+#addList button.on { background: var(--paid-bg); }
+#addList .sq { flex: none; width: 22px; height: 22px; border-radius: 7px; display: inline-flex; align-items: center; justify-content: center;
+               border: 1.5px solid var(--line); background: var(--card); color: var(--accent-text); }
+#addList button.on .sq { background: var(--accent); border-color: var(--accent); }
+#addList .sq svg { width: 13px; height: 13px; }
+#addList .srcwho { flex: 1; min-width: 0; }
+#addList .nm { display: block; font-weight: 500; overflow-wrap: anywhere; }
+#addList .lk { display: block; font-size: 11px; color: var(--muted); overflow-wrap: anywhere; }
+#addList .gm { flex: none; font-size: 11px; line-height: 1.35; text-align: right; color: var(--muted); white-space: nowrap; }
+#addList { max-height: 46vh; max-height: 46dvh; }
+#addList button.here { opacity: .55; }
+#addList .nm .gmark { font-size: 15px; margin-left: 4px; }
+
+/* Who came (the View popup): avatars, four to a row, like the current session's list */
+#viewList.avview { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2px 0; margin: 4px 0 6px; padding: 0; max-height: none; overflow: visible; }
+#viewList.avview .p.tile.avc { cursor: default; }
+#aAll { padding: 3px 10px; font-size: 12px; border-radius: 99px; color: var(--green-text); background: var(--card); border: 1px solid var(--line); }
+#aAll[hidden] { display: none; }
+@media (pointer: coarse) { #aAll { padding: 7px 13px; font-size: 13px; } }
+
+/* The current session's profit, on the top left of the session box */
+.session .sprofit { display: inline-flex; align-items: baseline; gap: 6px; padding: 4px 11px; border-radius: 99px; font-size: 13px; background: var(--field); border: 1px solid var(--line); white-space: nowrap; }
+.session .sprofit[hidden] { display: none; }
+.session .sprofit span { font-size: 11px; color: var(--muted); }
+.session .sprofit b { font-size: 14px; font-weight: 500; }
+.session .sprofit.pos { background: var(--paid-chip); border-color: var(--paid-line); }
+.session .sprofit.pos b, .session .sprofit.pos span { color: var(--paid-chip-text); }
+.session .sprofit.neg { background: var(--unpaid-chip); border-color: var(--unpaid-line); }
+.session .sprofit.neg b, .session .sprofit.neg span { color: var(--unpaid-chip-text); }
+
+/* The Adding players row under the search box */
+#addTray { margin: 0 0 10px; padding: 8px 10px; background: var(--paid-bg); border: 1px dashed var(--paid-line); border-radius: 12px; }
+#addTray[hidden] { display: none; }
+#addTray .traytitle { font-size: 12px; font-weight: 500; color: var(--paid-text); margin: 0 0 6px; }
+#trayChips { display: flex; flex-wrap: wrap; gap: 6px; }
+.traychip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 4px 3px 11px; font-size: 14px; background: var(--card); color: var(--text); border: 1px solid var(--paid-line); border-radius: 99px; }
+.traychip > span { overflow-wrap: anywhere; }
+.trayx { position: relative; width: 22px; height: 22px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; border: 1px solid var(--line); background: var(--field); color: var(--muted); font-size: 15px; line-height: 1; }
+.trayx::after { content: ''; position: absolute; inset: -8px; }
+#addTray .trayfoot { display: flex; justify-content: space-between; align-items: center; margin-top: 7px; font-size: 11px; color: var(--muted); }
+#addTray .trayfoot .linkbtn { padding: 2px 0; font-size: 12px; }
+#pDrop button.picked { background: var(--paid-bg); }
+#pDrop button.picked .gm { color: var(--paid-text); font-weight: 500; }
+#pDrop button:disabled { opacity: .55; }
+
+/* The suggestions open in the page, under the search row, so the Adding players row below stays in view */
+#pDrop { position: static; margin: -4px 0 10px; max-height: 46vh; max-height: 46dvh; overflow-y: auto; }
+
+.traychip.guestchip { border-style: dashed; }
+.traychip .gtag { font-size: 10px; padding: 1px 6px; border-radius: 99px; background: var(--field); color: var(--muted); border: 1px solid var(--line); }
+
+/* A web address the host wrote in a description is a link */
+a.autolink { color: var(--green-text); text-decoration: underline; text-underline-offset: 2px; overflow-wrap: anywhere; word-break: break-word; }
+a.autolink:hover { opacity: .8; }
+
+/* The floating plus is drawn (not a text sign), so it sits exactly in the middle of its circle on every device */
+#btnNewSession.fab { display: flex; align-items: center; justify-content: center; padding: 0; line-height: 0; font-size: 0; }
+#btnNewSession.fab[hidden] { display: none; }
+#btnNewSession.fab svg { width: 26px; height: 26px; display: block; flex: none; }
+/* The Add button beside the search box: its text sits in the middle both ways */
+#btnQuickAdd { display: flex; align-items: center; justify-content: center; text-align: center; padding-top: 0; padding-bottom: 0; }
+#btnQuickAdd { font-weight: 700; white-space: nowrap; }
+
+/* New session > Session History: copy an earlier session's details */
+.sesshead { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; min-height: 28px; margin: 0 0 8px; }
+.sesshead .sesssteps { margin: 0; }
+.sesshist { margin-left: auto; display: inline-flex; align-items: center; gap: 5px; padding: 5px 11px; font-size: 12px; border-radius: 99px; background: var(--card); color: var(--green-text); border: 1px solid var(--line); white-space: nowrap; }
+.sesshist[hidden] { display: none; }
+.sesshist svg { width: 14px; height: 14px; flex: none; }
+#sessPick { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+#sessPick[hidden] { display: none; }
+.pickrow { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; width: 100%; padding: 10px 12px; text-align: left; border-radius: 12px; background: var(--card); color: var(--text); border: 1px solid var(--line); }
+.pickrow b { font-size: 14px; }
+.pickrow .pt { font-size: 13px; font-weight: 600; }
+.pickrow .hl { display: flex; gap: 5px; align-items: flex-start; font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
+.pickrow .hl .hic { flex: none; display: inline-flex; margin-top: 2px; }
+.pickrow .hl svg { width: 13px; height: 13px; }
+.pickrow .cur { font-style: normal; font-size: 11px; font-weight: 600; margin-left: 6px; padding: 2px 8px; border-radius: 99px; background: var(--paid-chip); color: var(--paid-chip-text); }
+
+/* The day strip's arrows (for a mouse: a phone just swipes) */
+.daywrap { position: relative; }
+.dnav { position: absolute; top: 12px; z-index: 2; width: 30px; height: 30px; min-height: 0; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--card); color: var(--text); border: 1px solid var(--line); box-shadow: 0 2px 8px rgba(0, 0, 0, .18); }
+.dnav[hidden] { display: none; }
+.dnav svg { width: 14px; height: 14px; }
+.dprev { left: -6px; }
+.dnext { right: -6px; }
+@media (hover: none) and (pointer: coarse) { .dnav { display: none; } }
+
+/* View History: Upcoming and Past, and the Upcoming line in the session box */
+.histtabs { display: flex; gap: 6px; margin: 0 0 10px; }
+.histtabs button { padding: 5px 12px; font-size: 13px; border-radius: 99px; background: var(--card); color: var(--muted); border: 1px solid var(--line); }
+.histtabs button.on { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+.hist li.histnone { display: block; color: var(--muted); font-size: 13px; text-align: center; padding: 14px 4px; border: none; }
+button.showbtn { align-self: flex-start; width: auto; display: inline-flex; margin-top: 8px; padding: 4px 12px; min-height: 0; font-size: 12px; border-radius: 99px; background: var(--card); color: var(--green-text); border: 1px solid var(--green-text); }
+.supcoming { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; margin-top: 10px; padding: 8px 10px; min-height: 0; font-size: 13px; text-align: left; border-radius: 10px; background: var(--field); color: var(--green-text); border: 1px solid var(--line); }
+.supcoming[hidden] { display: none; }
+.supcoming svg { width: 14px; height: 14px; flex: none; }
+.supcoming .supl, .supcoming .supr { display: inline-flex; align-items: center; gap: 6px; min-width: 0; }
+.supcoming .supr { color: var(--muted); }
+.supcoming { flex-wrap: wrap; }
+.supcoming .supl, .supcoming .supr span { white-space: nowrap; }
+.supcoming .supr { margin-left: auto; }
+
+/* An ended or past session on the page, who still owes in the History, and the way back to the latest session */
+.session .stag { margin-left: 8px; padding: 1px 8px; border-radius: 99px; font-size: 11px; font-weight: 400; border: 1px solid var(--line); background: var(--field); color: var(--muted); vertical-align: 1px; }
+.session .stag[hidden] { display: none; }
+.session .stag.past { background: var(--unpaid-chip); border-color: var(--unpaid-line); color: var(--unpaid-chip-text); }
+.session .pastbanner { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 10px; padding: 9px 10px; border-radius: 10px; font-size: 13px; background: var(--unpaid-chip); border: 1px solid var(--unpaid-line); color: var(--unpaid-chip-text); }
+.session .pastbanner[hidden] { display: none; }
+.session .pastbanner button { flex: none; padding: 4px 11px; min-height: 0; font-size: 12px; border-radius: 99px; background: var(--card); color: var(--text); border: 1px solid var(--line); }
+.hist i.utag, .hist i.ptag { font-style: normal; font-size: 11px; margin-left: 6px; padding: 2px 8px; border-radius: 99px; }
+.hist i.utag { background: var(--unpaid-chip); color: var(--unpaid-chip-text); }
+.hist i.ptag { background: var(--paid-chip); color: var(--paid-chip-text); }
+
+/* A history row's first line (date, sport, Current, unpaid): the badges wrap as whole pills, never split their own words */
+.hist li .what > span:first-child { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; }
+.hist li .what > span:first-child i { margin-left: 0; white-space: nowrap; }
+
+/* Touch targets: the small pills and icon buttons keep their look but get a 44px area to tap (an invisible, centred extension) */
+.session .histbtn, .sortbtn, .chip, .sesshist, .sportchip, #calToggle, .linkbtn, #sessCalPrev, #sessCalNext, .histtabs button,
+.hist .info, .hist .view, .hist .del, button.showbtn, .tagfilter, .pmedit, .pmdel, .panelqr, #btnQr, .pastbanner button, .supcoming { position: relative; }
+.session .histbtn::after, .sortbtn::after, .chip::after, .sesshist::after, .sportchip::after, #calToggle::after, .linkbtn::after, #sessCalPrev::after, #sessCalNext::after,
+.histtabs button::after, .hist .info::after, .hist .view::after, .hist .del::after, button.showbtn::after, .tagfilter::after, .pmedit::after, .pmdel::after, .panelqr::after,
+#btnQr::after, .pastbanner button::after, .supcoming::after, .dnav::after {
+  content: ''; position: absolute; left: 50%; top: 50%; right: auto; bottom: auto; transform: translate(-50%, -50%); width: 44px; min-width: calc(100% + 8px); height: 44px; margin: 0;
+}
+
+/* Loading: placeholders instead of "Loading..." and a balance of zero */
+@keyframes skelmove { 0% { background-position: 150% 0; } 100% { background-position: -50% 0; } }
+body.booting #who, body.booting #balance, body.booting #sessionDate, body.booting #sessLabelTop {
+  color: transparent !important; border-radius: 6px; background: linear-gradient(90deg, rgba(127,127,127,.18) 30%, rgba(127,127,127,.34) 50%, rgba(127,127,127,.18) 70%); background-size: 300% 100%; animation: skelmove 1.3s linear infinite;
+}
+body.booting #who { display: inline-block; min-width: 120px; }
+body.booting #balance { display: inline-block; min-width: 170px; }
+body.booting #sessionDate { display: inline-block; min-width: 190px; }
+body.booting #sessLabelTop { display: inline-block; min-width: 110px; }
+body.booting #ring, body.booting .balbtns, body.booting #btnHideBal, body.booting #listTools { visibility: hidden; }
+.skelgrid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px 10px; padding: 8px 0; }
+.skelp { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.skelp i { width: 64px; height: 64px; border-radius: 50%; }
+.skelp b { width: 44px; height: 10px; border-radius: 5px; }
+.skelp i, .skelp b { background: linear-gradient(90deg, rgba(127,127,127,.18) 30%, rgba(127,127,127,.34) 50%, rgba(127,127,127,.18) 70%); background-size: 300% 100%; animation: skelmove 1.3s linear infinite; }
+@media (prefers-reduced-motion: reduce) { body.booting #who, body.booting #balance, body.booting #sessionDate, body.booting #sessLabelTop, .skelp i, .skelp b { animation: none; } }
+
+/* Empty states */
+#empty:has(.emptycard) { color: var(--text); }
+.emptycard { text-align: center; padding: 22px 16px; background: var(--card); border: 1px solid var(--line); border-radius: 14px; }
+.emptycard h3 { margin: 8px 0 4px; font-size: 16px; font-weight: 600; }
+.emptycard .es-sub { margin: 0 0 12px; font-size: 13px; color: var(--muted); }
+.es-ic { width: 46px; height: 46px; margin: 0 auto; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+.es-ic svg { width: 24px; height: 24px; }
+.es-ic.green { background: var(--paid-chip); color: var(--paid-chip-text); }
+.es-ic.blue { background: var(--field); color: var(--green-text); }
+.es-steps { margin: 0 0 14px; padding: 0; list-style: none; counter-reset: es; text-align: left; display: flex; flex-direction: column; gap: 8px; font-size: 13px; }
+.es-steps li { display: flex; gap: 10px; align-items: flex-start; counter-increment: es; }
+.es-steps li::before { content: counter(es); flex: none; width: 22px; height: 22px; border-radius: 50%; background: var(--field); color: var(--green-text); font-size: 12px; display: flex; align-items: center; justify-content: center; }
+.es-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.es-btn { min-height: 44px; padding: 9px 16px; border-radius: 99px; font-size: 14px; border: 1px solid var(--line); background: var(--card); color: var(--text); }
+.es-btn.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+.session .smore::after { inset: -7px; }
+
+/* The Activity view */
+#actOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); align-items: center; justify-content: center; padding: 16px; z-index: 10; }
+#actDialog { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 16px; width: 100%; max-width: 440px; max-height: 86vh; max-height: 86dvh; overflow-y: auto; }
+#actTitle { margin: 0 0 2px; font-size: 18px; font-weight: 600; }
+#actSub { margin: 0 0 10px; font-size: 13px; color: var(--muted); }
+#actChips { margin: 0 0 8px; }
+#actList h4 { margin: 12px 0 4px; font-size: 12px; font-weight: 600; color: var(--muted); text-transform: none; }
+.actrow { display: flex; gap: 10px; padding: 8px 0; border-top: 1px solid var(--line); font-size: 14px; }
+.actrow .actt { flex: none; width: 64px; font-size: 12px; color: var(--muted); padding-top: 2px; }
+.actrow .actb { min-width: 0; display: flex; flex-direction: column; gap: 2px; overflow-wrap: anywhere; }
+.actrow .actb i { font-style: normal; font-size: 11px; color: var(--muted); }
+.actrow.security .actb span { color: var(--unpaid-chip-text); }
+.actnone { margin: 14px 0; text-align: center; color: var(--muted); font-size: 13px; }
+#actDialog .row { display: flex; margin-top: 12px; }
+#actDialog .row button { width: 100%; min-height: 44px; }

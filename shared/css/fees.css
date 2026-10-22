@@ -1,0 +1,553 @@
+/* Court green theme. Colours live in the variables below; the dark scheme only swaps those values. */
+:root {
+  --bg: #eef6ef; --card: #ffffff; --field: #f4faf5; --text: #14301c; --muted: #5f7f67; --line: #d3e4d6;
+  --hero: #166534; --hero-text: #ffffff; --hero-muted: #bbf7d0;
+  --green-text: #166534;
+  --unpaid-bg: #fff5f5; --unpaid-line: #f1c5c5; --unpaid-text: #7f1d1d; --unpaid-chip: #fee2e2; --unpaid-chip-text: #991b1b;
+  --paid-bg: #f0fdf4; --paid-line: #b7e4c4; --paid-text: #14532d; --paid-chip: #dcfce7; --paid-chip-text: #166534;
+  --accent: #166534; --accent-text: #ffffff;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f1a13; --card: #17251c; --field: #1d2f23; --text: #e6f2e9; --muted: #8fb09a; --line: #29402f;
+    --hero: #14532d; --hero-muted: #a7e8be;
+    --green-text: #86efac;
+    --unpaid-bg: #2a1717; --unpaid-line: #6b3333; --unpaid-text: #f3b8b8; --unpaid-chip: #4a2222; --unpaid-chip-text: #fecaca;
+    --paid-bg: #13291a; --paid-line: #2d6a41; --paid-text: #bfe9cb; --paid-chip: #1b4a2a; --paid-chip-text: #a7f3c1;
+    --accent: #4ade80; --accent-text: #052e16;
+  }
+}
+[hidden] { display: none !important; }
+* { box-sizing: border-box; }
+body { margin: 0; padding: 0 16px 24px; background: var(--bg); color: var(--text);
+       font-family: system-ui, -apple-system, "Segoe UI", sans-serif; font-size: 16px; }
+main { max-width: 640px; margin: 0 auto; }
+
+/* Header: green band with the title, buttons and a small paid count over a thin progress bar */
+.top { position: sticky; top: 0; z-index: 5; margin: 0 -16px 14px; padding: 14px 16px 14px;
+       background: var(--hero); color: var(--hero-text); border-radius: 0 0 16px 16px; }
+.top .in { max-width: 640px; margin: 0 auto; }
+.head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 0; }
+h1 { font-size: 19px; font-weight: 500; margin: 0; }
+.who { font-size: 12px; color: var(--hero-muted); margin-top: 2px; }
+.hbtns { display: flex; gap: 6px; flex: none; }
+.hbtns button { padding: 7px 10px; font-size: 13px; border: none; border-radius: 8px;
+                background: rgba(255,255,255,.16); color: var(--hero-text); }
+.meta { display: flex; justify-content: space-between; align-items: baseline; margin: 12px 0 6px; font-size: 12px; }
+.top .count { color: var(--hero-muted); font-size: 12px; }
+.meta .count b { font-weight: 500; color: var(--hero-text); }
+.prog { height: 6px; border-radius: 999px; background: rgba(255,255,255,.22); overflow: hidden; }
+#barFill { height: 100%; width: 0; background: var(--hero-muted); border-radius: 999px; transition: width .3s ease; }
+
+/* Shared controls */
+details { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 10px 14px; margin-bottom: 12px; }
+summary { cursor: pointer; font-size: 15px; font-weight: 500; }
+textarea { width: 100%; margin-top: 10px; padding: 10px; font: inherit; font-size: 16px; min-height: 160px;
+           background: var(--field); color: var(--text); border: 1px solid var(--line); border-radius: 10px; }
+button { font: inherit; cursor: pointer; border-radius: 12px; border: 1px solid var(--line);
+         background: var(--card); color: var(--text); padding: 10px 16px; }
+button.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+.row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; }
+.addrow { display: flex; gap: 6px; margin: 0 0 10px; }
+.addrow input { flex: 1; min-width: 0; font: inherit; font-size: 16px; padding: 10px 12px; background: var(--card);
+                color: var(--text); border: 1px solid var(--line); border-radius: 12px; }
+#btnEdit { color: var(--green-text); }
+#msg { margin: 0 0 12px; padding: 10px 12px; border-radius: 10px; font-size: 14px; display: none;
+       background: var(--unpaid-bg); color: var(--unpaid-text); border: 1px solid var(--unpaid-line); }
+#empty { color: var(--muted); font-size: 14px; }
+
+/* Player boxes: name on the left, status on the right */
+#grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.p { display: flex; justify-content: space-between; align-items: center; gap: 6px; width: 100%; min-height: 48px;
+     padding: 8px 10px 8px 12px; text-align: left; font-size: 14px; border: 1px solid var(--line); border-radius: 14px;
+     user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; touch-action: manipulation; }
+.p .n { font-weight: 500; overflow-wrap: break-word; min-width: 0; }
+.p .s { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; white-space: nowrap; padding: 3px 8px; border-radius: 99px; }
+.p .s svg { width: 12px; height: 12px; flex: none; }
+.p.unpaid { background: var(--unpaid-bg); border-color: var(--unpaid-line); color: var(--unpaid-text); }
+.p.unpaid .s { background: var(--unpaid-chip); color: var(--unpaid-chip-text); }
+.p.paid { background: var(--paid-bg); border-color: var(--paid-line); color: var(--paid-text); }
+.p.paid .s { background: var(--paid-chip); color: var(--paid-chip-text); }
+.hint { font-size: 11px; color: var(--muted); text-align: center; margin: 10px 0 0; }
+
+/* Edit mode: the status chip is replaced by a pencil and a trash icon of about the same width */
+.acts { display: flex; gap: 3px; flex: none; }
+.ic { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px;
+      padding: 0; background: var(--card); color: var(--green-text); border: 1px solid var(--line); border-radius: 6px; }
+.ic::after { content: ''; position: absolute; inset: -4px; }
+.ic.del { color: var(--unpaid-chip-text); border-color: var(--unpaid-line); }
+.ic svg { width: 13px; height: 13px; }
+
+/* Long-press drag: the picked-up box floats under the finger and its slot shows dashed */
+.p.ph { opacity: .35; border-style: dashed; }
+.p.ghost { position: fixed; z-index: 30; margin: 0; pointer-events: none; transform: scale(1.04); outline: 2px solid var(--accent); opacity: .96; }
+
+/* Popups */
+#overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); align-items: center;
+           justify-content: center; padding: 16px; z-index: 10; }
+#dialog { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 20px;
+          width: 100%; max-width: 340px; }
+#dlgTitle { font-size: 17px; font-weight: 500; margin: 0 0 4px; overflow-wrap: anywhere; }
+#dlgSub { font-size: 14px; color: var(--muted); margin: 0 0 18px; }
+#dlgSub.err { color: var(--unpaid-text); }
+#dlgInput, #dlgInput2 { display: none; width: 100%; font: inherit; font-size: 16px; padding: 10px 12px; margin: 0 0 16px;
+            background: var(--field); color: var(--text); border: 1px solid var(--line); border-radius: 10px; }
+#qrOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.6); flex-direction: column;
+             align-items: center; justify-content: center; gap: 12px; padding: 16px; z-index: 20; }
+#qrOverlay img { display: block; max-width: 100%; max-height: calc(100vh - 100px); border-radius: 14px; background: #fff; }
+
+/* Calculator popup: green title band, then the tables */
+#calcOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); align-items: center;
+               justify-content: center; padding: 12px; z-index: 15; }
+#calcSheet { background: var(--card); border: 1px solid var(--line); border-radius: 18px; overflow-y: auto;
+             width: 100%; max-width: 420px; max-height: calc(100vh - 24px); max-height: calc(100dvh - 24px); }
+.chead { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; justify-content: space-between; gap: 8px;
+         padding: 8px 12px; background: var(--hero); color: var(--hero-text); }
+.chead b { font-weight: 500; font-size: 16px; }
+.chead .ttl { min-width: 0; }
+.chead .cbtns { display: flex; gap: 6px; }
+.chead button { padding: 6px 10px; font-size: 13px; border: none; border-radius: 8px;
+                background: rgba(255,255,255,.16); color: var(--hero-text); }
+.chead button.primary { background: #ffffff; color: var(--hero); font-weight: 500; }
+.cbody { padding: 6px 12px 10px; }
+/* The saving note sits under the title in the green band, so it never pushes the tables around */
+#calcStatus { min-height: 14px; font-size: 11px; line-height: 14px; color: var(--hero-muted); margin: 0; }
+#calcStatus.err { color: #fecaca; }
+.csec { font-size: 13px; font-weight: 500; color: var(--green-text); margin: 8px 0 2px; }
+.csec.first { margin-top: 2px; }
+.cg { display: grid; grid-template-columns: minmax(0, 1fr) 72px 58px 68px; gap: 4px 6px; align-items: center; }
+.cg .hd { font-size: 11px; color: var(--muted); }
+.cg .r { text-align: right; }
+.cg .nm { font-size: 14px; }
+.cg input { width: 100%; min-width: 0; height: 32px; padding: 0 8px; font: inherit; font-size: 16px; text-align: right;
+            background: var(--field); color: var(--text); border: 1px solid var(--line); border-radius: 10px; }
+.cg .fx { text-align: right; font-size: 14px; color: var(--muted); padding-right: 9px; }
+.cg .tot { text-align: right; font-size: 14px; font-weight: 500; }
+.csum { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted);
+        border-top: 1px solid var(--line); margin-top: 6px; padding-top: 5px; }
+.csum b { color: var(--text); font-weight: 500; }
+.cnote { font-size: 11px; color: var(--muted); margin: 4px 0 0; }
+#cRes { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; padding: 7px 12px;
+        border-radius: 12px; font-size: 17px; font-weight: 500; border: 1px solid; }
+#cRes.pos { background: var(--paid-chip); color: var(--paid-chip-text); border-color: var(--paid-line); }
+#cRes.neg { background: var(--unpaid-chip); color: var(--unpaid-chip-text); border-color: var(--unpaid-line); }
+#cPay { margin-top: 6px; padding: 7px 12px; border: 1px solid var(--line); border-radius: 12px; }
+.payline { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 14px; }
+.payline b { font-size: 18px; font-weight: 500; }
+.payline.sub { margin-top: 4px; font-size: 13px; color: var(--muted); }
+#cShare { font: inherit; font-size: 16px; height: 32px; padding: 0 26px 0 10px; color: var(--text);
+          background: var(--field); border: 1px solid var(--line); border-radius: 10px; }
+
+/* Shown instead of the page when the link has no valid code */
+#invalid { display: none; padding-top: 48px; text-align: center; max-width: 420px; margin: 0 auto; }
+#invalid p { color: var(--muted); font-size: 15px; line-height: 1.5; }
+body.invalid header, body.invalid main { display: none; }
+body.invalid #invalid { display: block; }
+
+/* Saving: a see-through layer over everything, so nothing can be tapped while the server is answering. The
+   dimming and the "Saving..." note only appear if it takes more than a moment. */
+#busy { display: none; position: fixed; inset: 0; z-index: 50; align-items: center; justify-content: center; cursor: progress; }
+#busy.on { display: flex; }
+#busy::before { content: ''; position: absolute; inset: 0; background: rgba(0,0,0,.28); animation: busyIn .15s .2s both; }
+#busy .pill { position: relative; display: flex; align-items: center; gap: 10px; padding: 10px 18px; font-size: 15px;
+              color: var(--text); background: var(--card); border: 1px solid var(--line); border-radius: 99px; animation: busyIn .15s .2s both; }
+#busy .spin { width: 16px; height: 16px; border: 2px solid var(--line); border-top-color: var(--accent); border-radius: 50%;
+              animation: busySpin .8s linear infinite; }
+@keyframes busyIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes busySpin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { #busy .spin { animation-duration: 2.4s; } }
+
+/* Master user: bottom navigation bar to the other users' pages, and the look-only page */
+:root { --view-bg: #fef3c7; --view-line: #fcd34d; --view-text: #78350f; }
+@media (prefers-color-scheme: dark) { :root { --view-bg: #3a2c08; --view-line: #8a6a12; --view-text: #fde68a; } }
+body.has-nav { padding-bottom: 92px; }
+#masterNav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; display: flex; overflow-x: auto;
+             background: var(--card); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom); }
+#masterNav .tab { flex: 1 0 96px; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 4px 9px;
+                  border: none; border-radius: 0; background: var(--card); color: var(--muted); }
+#masterNav .tab.on { background: var(--paid-bg); color: var(--green-text); }
+#masterNav .av { width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
+                 font-size: 11px; background: var(--field); color: var(--green-text); }
+#masterNav .tab.on .av { background: var(--accent); color: var(--accent-text); }
+#masterNav .nm { font-size: 12px; white-space: nowrap; }
+#masterNav .tab.on .nm { font-weight: 500; }
+#masterNav .sp { font-size: 10px; opacity: .8; }
+#viewBanner { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: 0 0 12px; padding: 10px 12px;
+              border-radius: 12px; font-size: 13px; background: var(--view-bg); color: var(--view-text); border: 1px solid var(--view-line); }
+#viewBanner button { flex: none; padding: 5px 10px; font-size: 12px; background: var(--card); color: var(--view-text); border-color: var(--view-line); }
+body.readonly .addrow, body.readonly #pasteBox, body.readonly #listTools, body.readonly #hint,
+body.readonly #btnNewSession, body.readonly #btnDeleteSession, body.readonly .hist .del, body.readonly #btnCalcReset { display: none !important; }
+body.readonly .p { cursor: default; }
+#switchOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); align-items: center; justify-content: center; padding: 16px; z-index: 12; }
+#switchDialog { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 20px; width: 100%; max-width: 340px; }
+#switchTitle { font-size: 17px; font-weight: 500; margin: 0 0 4px; overflow-wrap: anywhere; }
+#switchSub { font-size: 14px; color: var(--muted); margin: 0 0 18px; }
+
+/* Edit mode with tick boxes: a tick square instead of the trash icon, and a bar at the bottom */
+.ic.chk { color: var(--accent-text); }
+.ic.chk[aria-pressed="false"] { background: var(--card); }
+.ic.chk[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); }
+.p.picked { box-shadow: inset 0 0 0 2px var(--accent); }
+#grid.editing .p[data-pid] { cursor: pointer; }
+body.has-bulk { padding-bottom: 120px; }
+#bulkBar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 7; background: var(--card); border-top: 1px solid var(--line);
+           padding: 10px 14px calc(10px + env(safe-area-inset-bottom)); }
+#bulkBar[hidden] { display: none; }
+#bulkBar .info { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--muted); margin: 0 0 8px; }
+#bulkBar .info button { padding: 4px 10px; font-size: 13px; border-radius: 8px; }
+#bulkBar .btns { display: flex; gap: 8px; }
+#bulkBar .btns button { flex: 1; padding: 10px 8px; font-size: 14px; }
+#bulkBar .btns button:first-child { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+#bulkBar .btns .danger { background: #b42318; color: #ffffff; border-color: #b42318; }
+body.has-nav.has-bulk { padding-bottom: 210px; }
+
+/* Optional small line under a player's name (pickleball: the unique link) */
+.p .n .sub { display: block; margin-top: 1px; font-size: 10px; font-weight: 400; opacity: .75; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#dlgInput + #dlgInput2 { margin-top: -8px; }
+
+/* Logo at the top left of the header (the host's own, from the database) */
+.brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.logo { flex: none; width: 52px; height: 52px; border-radius: 50%; box-shadow: 0 0 0 2px rgba(255,255,255,.4); }
+
+/* Page menu (a user with the calendar): a dropdown among the header buttons with Fees / Calendar */
+.pagemenu { position: relative; flex: none; }
+.pagemenu .menubtn { width: 34px; height: 34px; padding: 0; border: none; border-radius: 8px; background: rgba(255,255,255,.16); color: var(--hero-text);
+                     display: inline-flex; align-items: center; justify-content: center; }
+.pagemenu .menubtn svg { width: 18px; height: 18px; }
+.pagemenu .menulist { position: absolute; right: 0; top: calc(100% + 6px); z-index: 30; min-width: 160px; padding: 4px; background: var(--card);
+                      border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,.2); }
+.pagemenu .menulist[hidden] { display: none; }
+.pagemenu .menuitem { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 12px; border: none; border-radius: 8px; background: transparent;
+                      color: var(--text); text-align: left; font-size: 14px; }
+.pagemenu .menuitem svg { flex: none; width: 18px; height: 18px; color: var(--green-text); }
+.pagemenu .menuitem span { flex: 1; white-space: nowrap; }
+.pagemenu .menuitem:hover { background: var(--field); }
+.pagemenu .menuitem.on { background: var(--paid-bg); font-weight: 500; }
+
+/* Views that are switched without reloading the page. The page's own header and list carry class "feesview"; the
+   calendar fills #calView; each other page of a master user is a frame that is created the first time it is opened. */
+body[data-view]:not([data-view="fees"]) .feesview, body[data-view]:not([data-view="fees"]) #bulkBar { display: none; }
+#calView { display: none; }
+body[data-view="calendar"] #calView { display: block; }
+.viewframe { position: fixed; left: 0; right: 0; top: 0; bottom: var(--navh, 0px); z-index: 4; background: var(--bg); }
+.viewframe iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: var(--bg); }
+.viewframe:not(.ready) iframe { visibility: hidden; }
+.viewload { margin: 0; padding: 80px 0 0; text-align: center; color: var(--muted); font-size: 14px; }
+.viewload button { margin-left: 8px; padding: 5px 10px; font-size: 13px; }
+
+/* The owner's eye button in the header (pickleball: opens the guest page in a new tab) */
+.eyebtn { flex: none; width: 34px; height: 34px; border-radius: 8px; background: rgba(255,255,255,.16); color: var(--hero-text);
+          display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+.eyebtn svg { width: 18px; height: 18px; }
+.eyebtn:hover { background: rgba(255,255,255,.26); }
+
+/* The host's logo and QR popup (menu item "Logo and QR") */
+#profOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); align-items: center; justify-content: center; padding: 16px; z-index: 12; }
+#profDialog { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 20px; width: 100%; max-width: 360px; max-height: 92vh; overflow-y: auto; }
+#profTitle { font-size: 17px; font-weight: 500; margin: 0 0 4px; }
+#profMsg { min-height: 20px; font-size: 13px; color: var(--muted); margin: 0 0 10px; }
+#profMsg.err { color: var(--unpaid-text); }
+.profrow { display: flex; gap: 12px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); }
+.profpic { flex: none; width: 72px; height: 72px; display: flex; align-items: center; justify-content: center; overflow: hidden;
+           background: var(--field); border: 1px solid var(--line); border-radius: 12px; }
+.profpic.logo { border-radius: 50%; }
+.profpic img { width: 100%; height: 100%; object-fit: contain; }
+.profpic.logo img { object-fit: cover; }
+.profpic span { font-size: 11px; color: var(--muted); }
+.profwho { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 3px; }
+.profwho b { font-weight: 500; }
+.profwho span { font-size: 12px; color: var(--muted); }
+.profbtns { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.profbtns button { padding: 6px 10px; font-size: 13px; border-radius: 9px; }
+
+/* Who marked a paid player (pickleball): a small line under the name */
+.p .n .by { display: block; margin-top: 1px; font-size: 10px; font-weight: 400; opacity: .8; white-space: nowrap; }
+
+/* The 6-digit code screen of a pickleball page */
+body.locked { overflow: hidden; }
+#gate { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; padding: 16px; background: var(--bg); }
+#gateForm { width: 100%; max-width: 320px; background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 24px 20px; text-align: center; }
+#gateForm .lock { width: 40px; height: 40px; color: var(--green-text); margin: 0 auto 6px; display: block; }
+#gateTitle { font-size: 18px; font-weight: 500; margin: 0 0 4px; }
+#gateSub { font-size: 14px; color: var(--muted); margin: 0 0 16px; }
+#gatePin { display: block; width: 100%; box-sizing: border-box; font: inherit; font-size: 26px; letter-spacing: .5em; text-align: center; padding: 10px 8px 10px calc(8px + .5em);
+           background: var(--field); color: var(--text); border: 1px solid var(--line); border-radius: 12px; }
+#gateErr { min-height: 18px; font-size: 13px; color: var(--unpaid-text); margin: 8px 0 8px; }
+
+/* The Sub Admin's page: tapping a box opens the paid/unpaid popup, so the boxes look tappable again */
+body.admin .p { cursor: pointer; }
+
+/* One colour theme for each way of looking at a pickleball page. The Master Admin (GM) keeps the green above; the Sub Admin is
+   blue and a guest (the general link) is purple. Only the page's own colours change: paid stays green and unpaid stays red. */
+body.admin {
+  --bg: #eef3fb; --field: #f3f7fd; --text: #14263f; --muted: #5f7391; --line: #d3dfef;
+  --hero: #1d4ed8; --hero-muted: #bfdbfe; --green-text: #1d4ed8; --accent: #1d4ed8; --accent-text: #ffffff;
+}
+body.guest, body[data-guest] {
+  --bg: #f4f0fa; --field: #f8f5fd; --text: #2a1745; --muted: #75609a; --line: #e1d6f1;
+  --hero: #6d28d9; --hero-muted: #ddd6fe; --green-text: #6d28d9; --accent: #6d28d9; --accent-text: #ffffff;
+}
+@media (prefers-color-scheme: dark) {
+  body.admin {
+    --bg: #0f1620; --card: #172233; --field: #1d2b40; --text: #e6edf8; --muted: #8fa6c6; --line: #29405f;
+    --hero: #1e3a8a; --hero-muted: #bfdbfe; --green-text: #93c5fd; --accent: #60a5fa; --accent-text: #0b1b3a;
+  }
+  body.guest, body[data-guest] {
+    --bg: #17101f; --card: #221832; --field: #2b2040; --text: #efe8fa; --muted: #b3a0d3; --line: #3d2f5a;
+    --hero: #4c1d95; --hero-muted: #ddd6fe; --green-text: #c4b5fd; --accent: #a78bfa; --accent-text: #1e0b3d;
+  }
+}
+
+/* ---- The same design on every sport: header with a progress ring, filter chips, player tiles, bottom tabs ---- */
+.bal { display: flex; justify-content: space-between; align-items: baseline; margin-top: 12px; }
+.bal span { font-size: 12px; color: var(--hero-muted); }
+.bal b { font-size: 24px; font-weight: 500; color: var(--hero-text); }
+.balbtns { display: flex; gap: 8px; margin: 10px 0 0; }
+.balbtns button { padding: 6px 16px; font-size: 13px; border: none; border-radius: 99px; background: rgba(255,255,255,.16); color: var(--hero-text); }
+
+.herorow { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 12px; }
+.herol { min-width: 0; }
+.herol .bal { display: block; margin-top: 0; }
+.herol .bal b { display: block; font-size: 28px; line-height: 1.2; }
+.herol .balbtns { margin-top: 8px; }
+.ring { flex: none; width: 78px; height: 78px; }
+.ring svg { display: block; }
+.ring .rt { fill: none; stroke: rgba(255,255,255,.22); stroke-width: 8; }
+.ring .rv { fill: none; stroke: var(--hero-muted); stroke-width: 8; stroke-linecap: round; transition: stroke-dasharray .45s ease; }
+.ring .rn { fill: var(--hero-text); font-size: 16px; font-weight: 500; }
+.ring .rs { fill: var(--hero-muted); font-size: 11px; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; }
+.chips[hidden] { display: none; }
+.chip { padding: 5px 13px; font-size: 13px; border-radius: 99px; background: var(--card); color: var(--text); border: 1px solid var(--line); }
+.chip.on { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+
+.p.tile { justify-content: flex-start; gap: 9px; padding: 9px 10px; min-height: 54px; }
+.p.tile .av { flex: none; width: 32px; height: 32px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
+              font-size: 12px; font-weight: 500; }
+.p.tile.paid .av { background: var(--paid-chip); color: var(--paid-chip-text); }
+.p.tile.unpaid .av { background: var(--unpaid-chip); color: var(--unpaid-chip-text); }
+.p.tile .n { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.p.tile .n .st { order: 1; font-size: 11px; font-weight: 400; white-space: nowrap; }
+.p.tile .n .sub { order: 2; }
+.p.tile .acts { margin-left: auto; }
+
+/* Edit mode keeps every box the size it has outside edit mode: the pencil sits on the corner of the avatar (so it takes no room in the
+   row and the name wraps exactly as before), and ticking is done by tapping the box, which turns the avatar into a tick. The tick
+   button stays in the page for keyboards and screen readers, but is not drawn. */
+#grid.editing .p.tile { position: relative; }
+#grid.editing .p.tile .acts { position: absolute; left: 26px; bottom: 4px; margin: 0; gap: 0; }
+#grid.editing .p.tile .ic.chk { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); border: 0; padding: 0; margin: -1px; }
+#grid.editing .p.tile .av { position: relative; box-shadow: inset 0 0 0 2px var(--line); }
+#grid.editing .p.tile.picked .av { background: var(--accent); color: transparent; box-shadow: none; }
+#grid.editing .p.tile.picked .av::after { content: '\2713'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+                                          color: var(--accent-text); font-size: 17px; font-weight: 500; }
+
+
+.pagemenu { display: none !important; }
+body.has-tabs { padding-bottom: 92px; }
+#tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 8; display: flex; justify-content: center; gap: 0;
+          padding: 6px 8px calc(6px + env(safe-area-inset-bottom)); background: var(--card); border-top: 1px solid var(--line); }
+#tabbar button { flex: 1; max-width: 120px; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 2px; border: none;
+                 background: transparent; color: var(--muted); font-size: 11px; border-radius: 10px; }
+#tabbar button.on { color: var(--green-text); }
+#tabbar svg { width: 24px; height: 24px; }
+body.has-tabs #bulkBar { bottom: 62px !important; }
+body.locked #tabbar { display: none; }
+
+#toast { position: fixed; left: 50%; bottom: 84px; z-index: 40; transform: translate(-50%, 12px); max-width: calc(100% - 32px);
+         padding: 9px 16px; border-radius: 99px; background: var(--text); color: var(--bg); font-size: 13px; opacity: 0; pointer-events: none;
+         transition: opacity .2s ease, transform .2s ease; }
+#toast.on { opacity: 1; transform: translate(-50%, 0); }
+
+@keyframes sheetUp { from { transform: translateY(40px); opacity: .4; } to { transform: none; opacity: 1; } }
+#moreSheet { display: none; position: fixed; inset: 0; z-index: 12; background: rgba(0,0,0,.5); align-items: flex-end; justify-content: center; }
+#moreSheet .sheet { width: 100%; max-width: 480px; background: var(--card); border-radius: 22px 22px 0 0; padding: 10px 14px calc(14px + env(safe-area-inset-bottom)); animation: sheetUp .22s ease; }
+#moreSheet .handle { width: 38px; height: 4px; border-radius: 2px; background: var(--line); margin: 0 auto 8px; }
+#moreSheet .items button { display: flex; align-items: center; gap: 14px; width: 100%; padding: 13px 8px; border: none; background: transparent; border-radius: 12px;
+                           font-size: 16px; color: var(--text); text-align: left; }
+#moreSheet .items button svg { width: 22px; height: 22px; color: var(--green-text); }
+
+/* While players are being edited, the bar of tick boxes sits above the tabs: leave room for both under the last name */
+body.has-tabs.has-bulk { padding-bottom: 210px; }
+
+/* Gender: a blue male sign or a red female sign after a name (no background; the last word of the name and the sign stay together), and the
+   male / female buttons */
+.gmark { display: inline-block; margin-left: 6px; min-width: 1em; padding: 0 1px; text-align: center; font-family: "Apple Symbols", "Segoe UI Symbol", "Noto Sans Symbols", sans-serif; background: none; font-style: normal; font-size: 18px; font-weight: 700; line-height: 1;
+         vertical-align: -1px; white-space: nowrap; -webkit-text-stroke: 0.7px currentColor; }
+.gmark.m { color: #1d4ed8; }
+.gmark.f { color: #e11d48; }
+.nm .last { white-space: nowrap; }
+.gpick { display: flex; gap: 8px; margin: 4px 0 12px; }
+.gpick button { flex: 1; padding: 9px 8px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); color: var(--muted); font-size: 14px; }
+.gpick button.on.m { background: #dbeafe; border-color: #2563eb; color: #1e40af; }
+.gpick button.on.f { background: #ffe4e6; border-color: #e11d48; color: #9f1239; }
+.gpick[hidden] { display: none; }
+
+/* Badminton's cost: the tube of shuttlecocks (the price of one is worked out from it) */
+.cg .nm .sub { display: block; font-size: 11px; line-height: 1.25; color: var(--muted); font-weight: 400; }
+.cg .nm .sub span { color: var(--green-text); white-space: nowrap; }
+.cg select, #cPay select { font: inherit; }
+
+/* The Hide button beside Total balance */
+.hidebtn { display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; width: 28px; height: 28px; margin: -4px 0 0 4px; padding: 0;
+           background: transparent; border: 0; border-radius: 8px; color: var(--hero-muted); cursor: pointer; }
+.hidebtn:hover, .hidebtn:focus-visible { background: rgba(255, 255, 255, .14); color: var(--hero-text); }
+.hidebtn svg { width: 18px; height: 18px; }
+body[data-guest] .hidebtn { display: none; }
+
+/* The popup of a player (#dialog.pdlg): a "three dots" button in the top right corner that opens a small menu (Edit player, Remove player),
+   then Cancel | the paid button. The edit popup (#dialog.edlg) keeps a text Remove button under Cancel | Save. */
+#dialog { position: relative; }
+#dlgIcons { position: absolute; top: 14px; right: 14px; }
+#dlgIcons[hidden] { display: none; }
+#dlgIcons button { position: relative; width: 32px; height: 32px; padding: 0; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; }
+#dlgIcons button::after { content: ''; position: absolute; inset: -6px; }   /* the part to touch is larger than the icon */
+#dlgIcons svg { width: 17px; height: 17px; }
+#btnDlgMore { color: var(--muted); }
+#dlgMenu { position: absolute; top: 38px; right: 0; z-index: 5; min-width: 170px; padding: 4px; background: var(--card); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 6px 20px rgba(0, 0, 0, .18); }
+#dlgMenu[hidden] { display: none; }
+#dlgMenu button { width: 100%; height: auto; min-height: 44px; padding: 8px 10px; display: flex; align-items: center; justify-content: flex-start; gap: 10px; border: none; border-radius: 8px; background: none; font-size: 14px; text-align: left; }
+#dlgMenu button::after { display: none; }
+#dlgMenu button:hover { background: var(--field); }
+#dlgMenu svg { width: 17px; height: 17px; flex: none; }
+#btnDlgEditIc { color: var(--text); }
+#btnDlgRemoveIc { color: var(--unpaid-chip-text); }
+#dialog.pdlg #dlgTitle { padding-right: 44px; min-height: 32px; }   /* room for the three dots beside the title */
+#dialog.pdlg.noicons #dlgTitle { padding-right: 0; min-height: 0; }
+#dialog .row { flex-wrap: wrap; }
+#btnDlgRemove { margin-right: auto; color: var(--unpaid-chip-text); border-color: var(--unpaid-line); }
+#btnDlgRemove[hidden] { display: none; }
+#dialog.pdlg .row, #dialog.edlg .row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; justify-content: stretch; }
+#dialog.pdlg .row button, #dialog.edlg .row button { width: 100%; min-height: 44px; padding: 10px 8px; margin: 0; overflow-wrap: anywhere; }
+#dialog.edlg #btnDlgRemove { order: 1; grid-column: 1 / -1; }   /* the edit popup: Cancel | Save, then Remove across the whole width */
+
+/* Calculator: the calculation type (Fixed Rate / AA) */
+.cmode { display: flex; gap: 6px; margin: 4px 0 2px; }
+.cmode button { flex: 1; min-height: 40px; padding: 8px 10px; font-size: 14px; border-radius: 10px; }
+.cmode button[aria-pressed="true"] { background: var(--accent); color: var(--accent-text); border-color: var(--accent); font-weight: 500; }
+.cmode button:disabled { opacity: .6; }
+.cmodenote { font-size: 11px; color: var(--muted); margin: 4px 0 2px; }
+/* AA with a loss: the Regular rows are gone (their players count as Social) and the Social prices and counts are worked out */
+#calcSheet.adj .reg { display: none; }
+#calcSheet.adj #cpSF, #calcSheet.adj #cpSM, #calcSheet.adj #cqSF, #calcSheet.adj #cqSM { opacity: .75; }
+
+/* A guest has only the one view: no tab bar (Players and Ranking are not shown to guests) */
+body.guest #tabbar { display: none; }
+body.guest.has-tabs { padding-bottom: 24px; }
+
+/* The guest's Share button in the header, and its message popup */
+.hbtns .sharebtn, .sharebtn { flex: none; width: 34px; height: 34px; padding: 0; border: none; border-radius: 8px; background: rgba(255,255,255,.16);
+            color: var(--hero-text); display: inline-flex; align-items: center; justify-content: center; }
+.sharebtn svg { width: 18px; height: 18px; }
+.sharebtn:hover { background: rgba(255,255,255,.26); }
+#shareOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); align-items: center; justify-content: center; padding: 16px; z-index: 12; }
+#shareDialog { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 20px; width: 100%; max-width: 380px;
+               max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); overflow-y: auto; }
+#shareTitle { font-size: 17px; font-weight: 500; margin: 0 0 4px; }
+#shareSub { font-size: 14px; color: var(--muted); margin: 0 0 8px; }
+#shareText { margin: 0; min-height: 150px; }
+#shareDialog .row { flex-wrap: wrap; }
+
+/* A guest sees every player the same (no paid or unpaid colour) */
+.p.guestp { background: var(--card); border-color: var(--line); color: var(--text); }
+
+/* Fixed Rate: "Contain [paid / all] players" under the type buttons */
+.cunpaid { display: flex; align-items: center; gap: 8px; font-size: 14px; margin: 8px 0 0; }
+.cunpaid[hidden] { display: none; }
+.cunpaid select { font: inherit; font-size: 16px; height: 36px; padding: 0 8px; background: var(--field); color: var(--text); border: 1px solid var(--line); border-radius: 10px; }
+
+/* A logo in a header can be tapped; the host's own page marks it with a small pencil */
+header img.logo { cursor: pointer; }
+.logowrap { position: relative; flex: none; display: block; width: 52px; height: 52px; }
+.logobadge { display: none; position: absolute; right: -4px; bottom: -4px; width: 20px; height: 20px; border-radius: 50%; background: #fff; color: #166534;
+             align-items: center; justify-content: center; box-shadow: 0 0 0 1px rgba(0,0,0,.18); pointer-events: none; }
+body:not(.readonly) .logobadge { display: inline-flex; }
+.logobadge svg { width: 12px; height: 12px; }
+
+/* The QR popup and the logo popup: a card on a dim background; they close with their own buttons */
+#logoOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.6); align-items: center; justify-content: center; padding: 16px; z-index: 20; }
+#qrOverlay { align-items: center; justify-content: center; }
+#qrBox, #logoBox { background: var(--card); color: var(--text); border: 1px solid var(--line); border-radius: 18px; padding: 16px; width: 100%; max-width: 340px; box-sizing: border-box;
+                   max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); overflow-y: auto; }
+#qrTitle, #logoTitle { font-size: 17px; font-weight: 500; margin: 0 0 10px; }
+#qrBox #qrImg { display: block; margin: 0 auto 12px; max-width: 100%; max-height: calc(100vh - 190px); max-height: calc(100dvh - 190px); border-radius: 12px; background: #fff; }
+#qrBox #qrImg[hidden] { display: none; }
+#qrNone { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; height: 150px; margin: 0 0 12px; border: 1.5px dashed var(--line);
+          border-radius: 14px; color: var(--muted); font-size: 13px; }
+#qrNone[hidden], #qrText[hidden] { display: none; }
+#qrNone svg { width: 38px; height: 38px; }
+#qrText { font-size: 14px; color: var(--muted); margin: 0 0 12px; line-height: 1.45; }
+#logoBox #logoImg { display: block; margin: 0 auto 12px; object-fit: cover; background: #fff; }
+#logoBox #logoImg.small { width: 72px; height: 72px; border-radius: 50%; }
+#logoBox #logoImg.big { width: 100%; max-width: 280px; aspect-ratio: 1 / 1; height: auto; border-radius: 16px; }
+#logoOpts[hidden] { display: none; }
+.logoopt { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 46px; padding: 10px 12px; margin: 0 0 8px; text-align: left; font-size: 15px; }
+.logoopt svg { width: 20px; height: 20px; flex: none; color: var(--green-text); }
+.qrbtns { display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: 8px; margin-top: 4px; }
+.qrbtns button { min-height: 44px; padding: 10px 8px; }
+.qrbtns button[hidden] { display: none; }
+
+/* The Female / Male filter chips carry the gender symbol (the same colours as the mark beside a player's name) */
+.chip.g { padding-left: 11px; padding-right: 11px; font-weight: 500; font-family: "Apple Symbols", "Segoe UI Symbol", "Noto Sans Symbols", sans-serif; }
+.chip.g.female { color: #e11d48; }
+.chip.g.male { color: #1d4ed8; }
+.chip.g.on { color: var(--accent-text); }
+@media (max-width: 340px) { .chips { gap: 5px; } .chip { padding: 5px 9px; font-size: 12px; } .chip.g { padding-left: 9px; padding-right: 9px; } }
+
+/* Players as an avatar grid, four to a row (a Reclub-style list): a round avatar with the initials, a ring and a tick for paid, a red ring for
+   unpaid, the gender sign on the avatar's corner and the name under it. The Paid / Unpaid words, the Paid-by and the tags are in the popup. */
+#grid.avgrid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2px 0; }
+.p.tile.avc { flex-direction: column; justify-content: flex-start; align-items: center; gap: 2px; padding: 3px 1px 1px; min-height: 0; text-align: center;
+              background: transparent; border-color: transparent; color: var(--text); border-radius: 12px; }
+.p.tile.avc.paid, .p.tile.avc.unpaid, .p.tile.avc.guestp { background: transparent; border-color: transparent; color: var(--text); }
+.p.tile.avc:active { background: var(--field); }
+.p.tile.avc .av { position: relative; width: 72%; max-width: 74px; height: auto; aspect-ratio: 1 / 1; font-size: clamp(14px, 4.2vw, 18px); font-weight: 500; border: 2.5px solid var(--line); }
+.p.tile.avc.paid .av { border-color: var(--paid-chip-text); }
+.p.tile.avc.unpaid .av { border-color: var(--unpaid-chip-text); }
+.p.tile.avc.guestp .av { background: var(--field); color: var(--muted); }
+.p.tile.avc.paid .av::after { content: '\2713'; position: absolute; right: -5px; bottom: -5px; width: 17px; height: 17px; border-radius: 50%; display: flex; align-items: center;
+                              justify-content: center; font-size: 11px; font-weight: 700; line-height: 1; background: var(--paid-chip-text); color: var(--paid-bg); box-shadow: 0 0 0 1.5px var(--card); }
+.p.tile.avc .av .gmark { position: absolute; left: -6px; top: -6px; margin: 0; padding: 0; min-width: 0; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center;
+                          font-size: 13px; border-radius: 50%; background: var(--card); box-shadow: 0 0 0 1px var(--line); }
+.p.tile.avc .n { flex: none; width: 100%; align-items: center; }
+.p.tile.avc .n .nm { width: 100%; font-size: 12px; font-weight: 500; line-height: 1.25; text-align: center; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.p.tile.avc .n .st, .p.tile.avc .n .sub { display: none; }
+@media (min-width: 400px) { .p.tile.avc .n .nm { font-size: 13px; } }
+@media (min-width: 560px) { #grid.avgrid { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
+@media (min-width: 900px) { #grid.avgrid { grid-template-columns: repeat(8, minmax(0, 1fr)); } }
+
+/* The card for a change of the player list */
+#notice { position: fixed; left: 12px; right: 12px; bottom: calc(70px + env(safe-area-inset-bottom)); margin: 0 auto; max-width: 420px; z-index: 40;
+          display: flex; align-items: center; gap: 11px; padding: 11px 16px 11px 12px; border-radius: 14px; background: var(--text); color: var(--bg);
+          box-shadow: 0 8px 24px rgba(0, 0, 0, .28); opacity: 0; transform: translateY(14px); pointer-events: none;
+          transition: opacity .2s ease, transform .2s ease; }
+#notice.on { opacity: 1; transform: none; pointer-events: auto; }
+#notice .ni { flex: none; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; background: #378add; }
+#notice .ni svg { width: 18px; height: 18px; }
+#notice .ni.paid { background: #1d9e75; }
+#notice .ni.unpaid { background: #d85a30; }
+#notice .ni.add, #notice .ni.multi { background: #378add; }
+#notice .ni.remove { background: #ba7517; }
+#notice .nt { min-width: 0; }
+#notice b { display: block; font-size: 15px; font-weight: 500; line-height: 1.25; overflow-wrap: anywhere; }
+#notice .nt > span { display: block; font-size: 12px; opacity: .78; margin-top: 1px; }
+.p.tile.avc.ghost { background: var(--card); box-shadow: 0 6px 18px rgba(0, 0, 0, .25); }
+
+/* Sort by (under the filter chips) */
+.sortrow { margin: -4px 0 10px; display: flex; }
+.sortrow[hidden] { display: none; }
+.sortwrap { position: relative; }
+.sortbtn { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; font-size: 12px; border-radius: 99px; background: var(--card); color: var(--muted); border: 1px solid var(--line); }
+.sortrow.sorted .sortbtn { color: var(--green-text); border-color: var(--green-text); background: var(--field); }
+.sortbtn svg { width: 14px; height: 14px; flex: none; }
+.sortbtn .sortchev { width: 12px; height: 12px; }
+.sortmenu { position: absolute; left: 0; top: calc(100% + 4px); z-index: 7; min-width: 160px; padding: 4px; background: var(--card); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 6px 20px rgba(0, 0, 0, .18); }
+.sortmenu[hidden] { display: none; }
+.sortmenu button { display: flex; width: 100%; justify-content: space-between; align-items: center; gap: 12px; min-height: 40px; padding: 8px 10px; border: none; border-radius: 8px; background: none; color: var(--text); font-size: 14px; text-align: left; }
+.sortmenu button b { visibility: hidden; font-weight: 500; color: var(--green-text); }
+.sortmenu button.on { background: var(--field); }
+.sortmenu button.on b { visibility: visible; }
+/* Sort by sits at the right edge, its menu opens leftwards from it */
+.sortrow { justify-content: flex-end; }
+.sortmenu { left: auto; right: 0; }

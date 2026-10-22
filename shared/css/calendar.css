@@ -1,0 +1,139 @@
+/* Session calendar: the Calendar view of badminton/fees.html, loaded the first time it is opened. Built on ../../shared/css/fees.css */
+main.calmain { max-width: 1100px; }
+#calMsg { margin: 0 0 12px; padding: 10px 12px; border-radius: 10px; font-size: 14px; display: none;
+          background: var(--unpaid-bg); color: var(--unpaid-text); border: 1px solid var(--unpaid-line); }
+
+/* Month and year pickers are kept small so the calendar gets the room */
+.calbar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0 0 10px; }
+.calbar .grow { flex: 1; }
+.calbar select { width: auto; height: 30px; padding: 0 6px; font: inherit; font-size: 13px; color: var(--text); background: var(--card);
+                 border: 1px solid var(--line); border-radius: 8px; }
+.calbar button { height: 30px; padding: 0 10px; font-size: 13px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; }
+.calbar button svg { width: 14px; height: 14px; }
+
+.caldow { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); background: var(--hero); color: var(--hero-text); border-radius: 10px 10px 0 0; }
+.caldow div { padding: 7px 2px; font-size: 11px; font-weight: 500; text-align: center; letter-spacing: .3px; }
+.calgrid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); border: 1px solid var(--hero); border-top: none; border-radius: 0 0 10px 10px; overflow: hidden; background: var(--card); }
+.calcell { min-height: 92px; padding: 3px; display: flex; flex-direction: column; gap: 3px; cursor: pointer; background: var(--card);
+           border-top: 1px solid var(--line); border-left: 1px solid var(--line); }
+.calcell:nth-child(7n+1) { border-left: none; }
+.calcell:nth-child(-n+7) { border-top: none; }
+.calcell.out { background: var(--field); cursor: default; }
+.calcell.past { cursor: not-allowed; }
+.calcell.past .num { opacity: .4; }
+.calcell:not(.out):not(.past):hover { background: var(--paid-bg); }
+.daylab { display: block; }
+.dayname { display: none; }
+.pills { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.calcell .num { height: 22px; line-height: 22px; font-size: 12px; text-align: center; }
+.calcell.today { background: var(--paid-bg); box-shadow: inset 0 0 0 2px var(--accent); }
+.calcell.today .num { width: 26px; margin: 0 auto; border-radius: 6px; background: var(--accent); color: var(--accent-text); font-weight: 500; }
+.calpill { width: 100%; padding: 3px 5px; border: none; border-radius: 6px; text-align: left; font-size: 11px; line-height: 1.25;
+           background: var(--paid-chip); color: var(--paid-chip-text); overflow-wrap: anywhere; }
+.calpill:hover { filter: brightness(.95); }
+.calpill .spicon { margin-right: 4px; vertical-align: -2px; }
+/* The sport choice in the add / edit popup */
+#csDialog .cssport { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 2px; }
+#csDialog .cssport .sportchip { display: inline-flex; align-items: center; padding: 6px 12px; font-size: 14px; }
+#csSportWrap[hidden] { display: none; }
+.calnote { margin: 8px 2px 0; font-size: 12px; color: var(--muted); }
+
+#csOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); align-items: center; justify-content: center; padding: 16px; z-index: 10; }
+#csDialog { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 20px; width: 100%; max-width: 340px; }
+#csTitle { font-size: 17px; font-weight: 500; margin: 0 0 8px; }
+#csDialog label { display: block; font-size: 12px; color: var(--muted); margin: 8px 0 3px; }
+#csDialog label span { opacity: .8; }
+#csDialog input { display: block; width: 100%; font: inherit; font-size: 16px; padding: 9px 12px; background: var(--field); color: var(--text);
+                  border: 1px solid var(--line); border-radius: 10px; color-scheme: light dark; }
+/* A date box would otherwise keep its own (wide) size and stick out of the popup */
+#csDialog textarea { display: block; width: 100%; box-sizing: border-box; font: inherit; font-size: 16px; padding: 9px 12px; resize: vertical; min-height: 56px; background: var(--field); color: var(--text);
+                     border: 1px solid var(--line); border-radius: 10px; }
+#csDialog .csgrid { display: flex; gap: 8px; }
+#csDialog .csgrid > div { flex: 1 1 0; min-width: 0; }
+#csDialog input[type="time"] { min-width: 0; max-width: 100%; box-sizing: border-box; min-height: 42px; }
+#csDialog input[type="date"] { min-width: 0; max-width: 100%; box-sizing: border-box; -webkit-appearance: none; appearance: none; text-align: left; min-height: 42px; }
+#csDialog input[type="date"]::-webkit-date-and-time-value { text-align: left; }
+#csErr { margin: 8px 0 0; font-size: 12px; color: var(--unpaid-text); }
+#csErr[hidden], #csConfirm[hidden] { display: none; }
+.csrow { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 16px; }
+.csright { display: flex; gap: 8px; }
+.csask { font-size: 14px; white-space: nowrap; color: var(--unpaid-text); }
+/* Delete? Keep / Delete: always a single row, so nothing in it wraps */
+#csConfirm { flex-wrap: nowrap; }
+#csConfirm .csright { flex: none; }
+#csConfirm button { padding: 8px 12px; font-size: 14px; white-space: nowrap; }
+.danger-outline { padding: 8px 12px; font-size: 14px; color: var(--unpaid-chip-text); border-color: var(--unpaid-line); }
+button.dangerfill { background: #b42318; color: #ffffff; border-color: #b42318; }
+
+/* On a phone the month is a list, one row per day: the date on the left, its sessions beside it in full */
+@media (max-width: 600px) {
+  .caldow { display: none; }
+  .calgrid { display: block; border-top: 1px solid var(--hero); border-radius: 10px; }
+  /* Blank filler cells and days that have passed (they can't be used) are left out, so the list starts at today */
+  .calcell.out, .calcell.past { display: none; }
+  .calcell, .calcell:nth-child(7n+1), .calcell:nth-child(-n+7) { flex-direction: row; align-items: flex-start; gap: 10px; min-height: 0; padding: 7px 10px;
+                                                              border-left: none; border-top: 1px solid var(--line); }
+  .calcell:first-child, .calcell.out + .calcell { border-top: none; }
+  .daylab { flex: none; width: 52px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .dayname { display: block; font-size: 10px; letter-spacing: .4px; color: var(--muted); }
+  .calcell .num { font-size: 15px; }
+  .pills { flex: 1; padding-top: 2px; }
+  /* Each session is a small box that fits its own name; the emails stay out of sight until it is touched */
+  /* Side by side, wrapping onto the next line only when a day runs out of room; an open session (its emails showing) takes a whole line */
+  .pills { flex-direction: row; flex-wrap: wrap; align-items: flex-start; gap: 5px; }
+  .calpill { width: auto; max-width: 100%; padding: 6px 10px; font-size: 13px; }
+  .pills .calpill .emline { display: none; font-size: 12px; }
+  .calpill .emcopy { width: 26px; height: 26px; }
+  .pills .calpill.open { flex: 1 1 100%; }
+  .pills .calpill.open .emline { display: flex; }
+  .calpill.open { box-shadow: inset 0 0 0 1.5px var(--accent); }
+  .pills .calpill .pedit { display: none; margin-top: 5px; padding: 3px 10px; font-size: 12px; border-radius: 8px; background: var(--card); color: var(--green-text); }
+  .pills .calpill.open .pedit { display: inline-block; }
+}
+
+/* Dragging a session: it floats under the pointer, its place shows dashed, and the day it would land on is outlined */
+.calpill { cursor: grab; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; touch-action: manipulation; }
+.calpill.ph { opacity: .35; outline: 1.5px dashed var(--accent); outline-offset: -1px; }
+.calpill.ghost { position: fixed; z-index: 40; margin: 0; pointer-events: none; transform: scale(1.04); box-shadow: 0 8px 20px rgba(0,0,0,.28); }
+.calcell.drop { outline: 2px dashed var(--accent); outline-offset: -2px; }
+
+/* A session is a div (it holds the copy buttons of its emails). Each email sits on its own line with a small copy button. */
+.calpill { display: block; }
+.calpill:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.calpill .emline { display: flex; align-items: center; gap: 2px; margin-top: 2px; font-size: 10px; opacity: .85; }
+.calpill .pedit { display: none; }
+.calpill .emtxt { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.emcopy { flex: none; width: 20px; height: 20px; padding: 0; border: none; border-radius: 6px; background: transparent; color: inherit;
+          display: inline-flex; align-items: center; justify-content: center; }
+.emcopy svg { width: 13px; height: 13px; }
+.emcopy:hover:not(:disabled) { background: rgba(0,0,0,.1); }
+.emcopy.done { color: var(--green-text); }
+.emcopy:disabled { opacity: .35; cursor: default; }
+
+/* In the add / edit popup: one dropdown per email, each with a copy button */
+.emrow { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+.emfield { position: relative; flex: 1; min-width: 0; }
+#csDialog input.eminput { width: 100%; padding: 9px 10px; font-size: 16px; }
+.emrow.bad input.eminput { border-color: #b42318; }
+.emrow.picked input.eminput { border-color: var(--accent); }
+.emlist { position: absolute; left: 0; right: 0; top: calc(100% + 3px); z-index: 20; margin: 0; padding: 4px; list-style: none; max-height: 168px; overflow-y: auto;
+          background: var(--card); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 8px 22px rgba(0,0,0,.25); }
+.emlist.up { top: auto; bottom: calc(100% + 3px); }
+.emlist li { padding: 8px 8px; border-radius: 7px; font-size: 14px; overflow-wrap: anywhere; cursor: pointer; }
+.emlist li.hi, .emlist li:hover { background: var(--field); }
+.emlist li.current { color: var(--green-text); font-weight: 500; }
+.emlist li.taken { opacity: .45; cursor: default; }
+.emlist li.none { color: var(--muted); cursor: default; }
+#csDialog .emrow .emcopy { width: 38px; height: 38px; border: 1px solid var(--line); background: var(--card); color: var(--green-text); }
+#csDialog .emrow .emcopy svg { width: 16px; height: 16px; }
+#csDialog .emdel { flex: none; width: 30px; height: 38px; padding: 0; border: none; background: transparent; color: var(--muted); font-size: 22px; line-height: 1; }
+.addemail { margin: 2px 0 0; padding: 4px 0; border: none; background: transparent; color: var(--green-text); font-size: 13px; }
+
+/* Phones and tablets: the month and year boxes are 16px so that the page is not zoomed when they are tapped; the Edit button of a session is finger-sized */
+@media (pointer: coarse) {
+  .calbar select { font-size: 16px; height: 38px; }
+  .pills .calpill .pedit { padding: 8px 14px; font-size: 13px; }
+}
+/* Time boxes: Safari draws an empty one with no height and the text centred unless told otherwise */
+#csDialog input[type="time"] { -webkit-appearance: none; appearance: none; text-align: left; }
+#csDialog input[type="time"]::-webkit-date-and-time-value { text-align: left; min-height: 1.2em; }

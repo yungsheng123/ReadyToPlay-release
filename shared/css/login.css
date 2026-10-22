@@ -1,0 +1,49 @@
+/* The login page (login.html): the sliding logos, the sign in / create account / change password card, the show-password eye.
+   Colours come from the shared theme in shared/css/fees.css. After changing this file, bump its ?v= number in login.html. */
+/* The page's content sits in the middle of the screen (and scrolls normally when it is taller than the screen) */
+body { min-height: 100vh; min-height: 100dvh; display: flex; align-items: center; justify-content: center; padding: 24px 16px; overflow-x: hidden; }
+.lg-wrap { width: 100%; max-width: 400px; margin: auto; }
+/* The sliding logos: one run of them is as wide as the shift, so the loop has no jump; the ends fade out */
+.lg-strip { height: 56px; overflow: hidden; margin: 0 -16px 18px;
+            -webkit-mask-image: linear-gradient(90deg, transparent, #000 14%, #000 86%, transparent); mask-image: linear-gradient(90deg, transparent, #000 14%, #000 86%, transparent); }
+.lg-strip[hidden] { display: none; }
+.lg-track { display: flex; gap: 14px; width: max-content; padding: 4px 0; animation: lgSlide var(--dur, 14s) linear infinite; }
+.lg-track img { flex: none; width: 48px; height: 48px; border-radius: 50%; object-fit: cover; background: var(--field); box-shadow: 0 0 0 2px var(--line); }
+@keyframes lgSlide { from { transform: translateX(0); } to { transform: translateX(var(--shift, -300px)); } }
+@media (prefers-reduced-motion: reduce) { .lg-track { animation: none; } }
+.lg-card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 18px; }
+.lg-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; margin: 0 0 16px; background: var(--field); border-radius: 12px; }
+.lg-tabs button { border: none; border-radius: 9px; padding: 9px 8px; font-size: 14px; background: transparent; color: var(--muted); }
+.lg-tabs button.on { background: var(--card); color: var(--text); box-shadow: 0 0 0 1px var(--line); }
+.lg-card h2 { font-size: 16px; font-weight: 500; margin: 0 0 12px; }
+.lg-card label { display: block; font-size: 12px; color: var(--muted); margin: 0 0 3px; }
+.lg-card input[type="text"], .lg-card input[type="password"] { display: block; width: 100%; font: inherit; font-size: 16px; padding: 10px 12px; margin: 0 0 12px;
+                                                                background: var(--field); color: var(--text); border: 1px solid var(--line); border-radius: 10px; }
+/* Show / hide password: a small eye at the right end of every password box */
+.lg-pw { position: relative; margin: 0 0 12px; }
+.lg-card .lg-pw input[type="password"], .lg-card .lg-pw input[type="text"] { margin: 0; padding-right: 46px; }
+.lg-eye { position: absolute; top: 50%; right: 6px; transform: translateY(-50%); width: 34px; height: 34px; padding: 0; display: inline-flex; align-items: center; justify-content: center;
+          border: none; border-radius: 8px; background: transparent; color: var(--muted); }
+.lg-eye:hover { color: var(--text); background: var(--paid-bg); }
+.lg-eye svg { width: 20px; height: 20px; }
+.lg-eye .off { display: none; }
+.lg-eye[aria-pressed="true"] .on { display: none; }
+.lg-eye[aria-pressed="true"] .off { display: inline; }
+.lg-sport { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 0 0 12px; }
+.lg-sport input { position: absolute; opacity: 0; pointer-events: none; }
+.lg-sport label { margin: 0; padding: 11px 8px; text-align: center; font-size: 14px; color: var(--text); border: 1px solid var(--line); border-radius: 10px; background: var(--field); cursor: pointer; }
+.lg-sport input[type="checkbox"]:checked + label::before { content: '\2713\00a0'; }
+.lg-sport input:checked + label { border-color: var(--accent); background: var(--paid-bg); color: var(--green-text); font-weight: 500; }
+.lg-sport input:focus-visible + label { box-shadow: var(--focus-shadow, 0 0 0 2px var(--accent)); }
+.lg-remember { display: flex; align-items: center; gap: 8px; margin: 0 0 14px; font-size: 14px; color: var(--text); }
+.lg-remember input { width: 18px; height: 18px; margin: 0; accent-color: var(--accent); }
+.lg-card button.primary { width: 100%; padding: 12px; font-size: 16px; }
+.lg-err { display: none; margin: 0 0 12px; padding: 9px 12px; font-size: 14px; border-radius: 10px; background: var(--unpaid-bg); color: var(--unpaid-text); border: 1px solid var(--unpaid-line); }
+.lg-ok { display: none; margin: 0 0 12px; padding: 9px 12px; font-size: 14px; border-radius: 10px; background: var(--paid-bg); color: var(--paid-text); border: 1px solid var(--paid-line); }
+.lg-links { margin: 14px 0 0; text-align: center; font-size: 13px; }
+.lg-links button { border: none; background: none; padding: 4px 6px; color: var(--green-text); text-decoration: underline; font-size: 13px; }
+.lg-form[hidden] { display: none; }
+
+.lg-note { font-size: 13px; color: var(--muted); margin: 0 0 12px; }
+.lg-tabs[hidden] { display: none; }
+#suPinWrap[hidden] { display: none; }
