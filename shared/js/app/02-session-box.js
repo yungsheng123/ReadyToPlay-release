@@ -199,11 +199,13 @@
     // This page's sessions, and (for a host who runs more than one sport) the other sports' sessions in the same list, newest day first.
     var rows = FA.sessions.map(function (s) { return { s: s, sport: FA.SPORT, here: true }; });
     if (FA.multiSport()) FA.others.forEach(function (o) { rows.push({ s: o, sport: o.sport, here: false, code: o.code }); });
-    // Two lists: Upcoming (today and later, the soonest first) and Past (the history, the latest first).
+    // Two lists: Upcoming (today and later, the soonest first) and Past (the history, the latest first). A session of today whose end time
+    // has passed is over: it is Past (the session box says "Ended" for it).
     var today = FA.todayIso();
     var startOf = function (row) { return row.s.startTime || ''; };
-    var pastRows = rows.filter(function (row) { return row.s.date < today; });
-    var upRows = rows.filter(function (row) { return row.s.date >= today; });
+    var isOver = function (row) { return FA.sessionState(row.s) !== ''; };
+    var pastRows = rows.filter(isOver);
+    var upRows = rows.filter(function (row) { return !isOver(row); });
     pastRows.sort(function (a, b) {
       if (a.s.date !== b.s.date) return a.s.date < b.s.date ? 1 : -1;
       if (startOf(a) !== startOf(b)) return startOf(a) < startOf(b) ? 1 : -1;
@@ -273,7 +275,7 @@
       var profit = document.createElement('span');
       profit.className = 'pr ' + (FA.guest() || balanceHidden ? 'hash' : s.profit < 0 ? 'neg' : 'pos');
       profit.textContent = FA.guest() ? FA.HASH : FA.amountText(FA.rm(s.profit));
-      if (!FA.guest() && s.date < today) right.appendChild(profit);   // a guest sees no profit, not even as hashes; a coming session has none to show yet
+      if (!FA.guest() && isOver(row)) right.appendChild(profit);   // a guest sees no profit, not even as hashes; a coming session has none to show yet
       // See who came and delete: on every session of the account, whichever sport it belongs to (a session of another sport is reached
       // through that sport's page; its buttons carry the page's code).
       var infoBtn = FA.guest() ? null : rowButton('info', 'info', s.id, 'Summary of ' + FA.prettyDate(s.date, false), INFO);

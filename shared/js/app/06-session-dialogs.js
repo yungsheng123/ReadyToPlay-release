@@ -268,7 +268,24 @@
     if (s.location) box.appendChild(FA.iconLine('vl', FA.ICON_PIN, s.location));
     FA.el('viewDescWrap').hidden = !s.description;
     AppShell.linkify(FA.el('viewDesc'), s.description || '');   // a web address in it is a link
+    FA.el('viewDesc').classList.add('clamped');   // cut after two lines; "Show more" opens it (fitViewDesc shows that button once the popup is on screen)
+    FA.el('viewDescMore').textContent = 'Show more';
+    FA.el('viewDescMore').setAttribute('aria-expanded', 'false');
+    FA.el('viewDescMore').hidden = true;
   }
+
+  // The "Show more" button is there only when the description is really cut (measured, so it follows the screen's width).
+  function fitViewDesc() {
+    var d = FA.el('viewDesc');
+    if (!d.clientHeight) return;
+    FA.el('viewDescMore').hidden = !d.classList.contains('clamped') || d.scrollHeight <= d.clientHeight + 1;
+  }
+  FA.el('viewDescMore').addEventListener('click', function () {
+    var open = FA.el('viewDesc').classList.toggle('clamped') === false;
+    FA.el('viewDescMore').textContent = open ? 'Show less' : 'Show more';
+    FA.el('viewDescMore').setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (open) FA.el('viewDescMore').hidden = false;
+  });
 
   function openViewDialog(id, other) {
     var s = other || null;
@@ -282,6 +299,7 @@
     sub.className = '';
     list.textContent = '';
     viewOverlay.style.display = 'flex';
+    fitViewDesc();
 
     (other ? FA.otherCall(other, 'GET', '/sessions/' + encodeURIComponent(id) + '/players') : FeesCore.api('GET', '/sessions/' + encodeURIComponent(id) + '/players', undefined, null))
       .then(function (players) {

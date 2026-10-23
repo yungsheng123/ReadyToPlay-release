@@ -45,10 +45,36 @@
     none.hidden = true; text.hidden = true; img.hidden = false;
     change.hidden = !mine; change.textContent = 'Change QR';
     img.onerror = function () { img.onerror = null; showNone(); };   // a QR that cannot be shown counts as no QR
-    var url = FC.pictureUrl('qr', FC.pictures.qrRev);
+    // The copy fetched ahead (see preloadQr) when there is one for this QR: it is on screen at once. Otherwise the picture's own address.
+    var url = qrCopy && qrCopy.rev === FC.pictures.qrRev ? qrCopy.url : FC.pictureUrl('qr', FC.pictures.qrRev);
     if (img.getAttribute('src') !== url) img.src = url;
     else if (img.complete && !img.naturalWidth) showNone();
   }
+
+  // The QR is fetched as soon as the page knows there is one (after sign-in, when the page opens), so the QR button shows it without a wait.
+  // The picture is kept as a local copy (the page's own address changes with every renewed pass, so the browser's cache could not be reused).
+  var qrCopy = null;       // { rev, url } of the copy that is ready
+  var qrFetching = -1;     // the rev being fetched now
+  FC.preloadQr = function () {
+    var rev = FC.pictures.qrRev;
+    if (!FC.pictures.hasQr || !window.fetch || !window.URL || !URL.createObjectURL) return;
+    if ((qrCopy && qrCopy.rev === rev) || qrFetching === rev) return;
+    qrFetching = rev;
+    fetch(FC.pictureUrl('qr', rev)).then(function (r) { return r.ok ? r.blob() : null; }).then(function (blob) {
+      if (qrFetching === rev) qrFetching = -1;
+      if (!blob || !blob.size || rev !== FC.pictures.qrRev) return;   // not there, or the QR was changed meanwhile
+      var url = URL.createObjectURL(blob);
+      var ready = new Image();
+      ready.onload = function () {
+        if (rev !== FC.pictures.qrRev) { URL.revokeObjectURL(url); return; }
+        if (qrCopy) URL.revokeObjectURL(qrCopy.url);
+        qrCopy = { rev: rev, url: url };
+        if (FC.qrOverlay.style.display === 'flex') FC.renderQr();   // the popup was opened while it came: show it now
+      };
+      ready.onerror = function () { URL.revokeObjectURL(url); };
+      ready.src = url;
+    }, function () { if (qrFetching === rev) qrFetching = -1; });
+  };
 
   document.getElementById('btnQr').addEventListener('click', function () { FC.renderQr(); FC.qrOverlay.style.display = 'flex'; });
   document.getElementById('btnQrClose').addEventListener('click', closeQr);

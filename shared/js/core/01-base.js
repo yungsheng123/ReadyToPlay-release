@@ -116,10 +116,10 @@
   FC.TOKEN_KEY = 'autobot.pin.' + FC.code;
   FC.token = '';
   if (FC.gated) { try { FC.token = sessionStorage.getItem(FC.TOKEN_KEY) || ''; } catch (e) { } }
-  // A page left alone for 5 minutes locks again. Every call to the server renews the pass for 5 more minutes (the new pass
+  // A page left alone for 30 minutes locks again. Every call to the server renews the pass for 30 more minutes (the new pass
   // comes back in the X-Access-Token header); while someone is using the page without saving anything, a small call
   // renews it about once a minute. Any tap, key press or scroll counts as using the page.
-  var IDLE_MS = 5 * 60 * 1000;
+  var IDLE_MS = 30 * 60 * 1000;
   var KEEP_MS = 60 * 1000;
   FC.IDLE_KEY = 'autobot.pin.idle';
   var idleTimer = null;
@@ -164,7 +164,7 @@
     try { sessionStorage.setItem(FC.TOKEN_KEY, fresh); } catch (e) { }
   }
 
-  // Nothing touched for 5 minutes: lock (the server would refuse the old pass by then too).
+  // Nothing touched for 30 minutes: lock (the server would refuse the old pass by then too).
   function checkIdle() {
     if (Date.now() - lastActive >= IDLE_MS) FC.relock(true);
   }

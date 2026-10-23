@@ -535,7 +535,13 @@ body.has-tabs main.feesview { padding-bottom: 72px; }
 .vl svg { width: 16px; height: 16px; }
 .vl.vdate { font-weight: 500; }
 .vsec { font-size: 12px; font-weight: 500; color: var(--muted); margin: 14px 0 5px; }
-#viewDesc { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.45; padding: 9px 11px; background: var(--field); border: 1px solid var(--line); border-radius: 10px; }
+.vdbox { padding: 9px 11px; background: var(--field); border: 1px solid var(--line); border-radius: 10px; }
+#viewDesc { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.45; }
+/* Long descriptions are cut after two lines (like the session box on the home page), opened with Show more */
+#viewDesc.clamped { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; }
+.vdmore { margin: 3px 0 0; padding: 0; border: 0; background: none; color: var(--green-text); font: inherit; font-size: 13px; text-decoration: underline; cursor: pointer; position: relative; }
+.vdmore::after { content: ''; position: absolute; top: -8px; bottom: -8px; left: -6px; right: -10px; }
+.vdmore[hidden] { display: none; }
 #viewList { max-height: none; overflow: visible; }
 
 /* ---- Add players (several at once) ---- */

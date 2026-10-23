@@ -61,6 +61,7 @@
     Array.prototype.forEach.call(document.querySelectorAll('.panelqr'), function (b) { b.hidden = false; });
     if (FC.qrOverlay.style.display === 'flex') FC.renderQr();     // a QR was just uploaded or removed: the open popup follows
     if (FC.logoOverlay.style.display === 'flex') FC.renderLogo();
+    FC.preloadQr();   // fetch the QR now (not when the button is tapped)
   }
 
   // After the host uploaded or removed a picture: { logoRev, qrRev, hasQr } (any of them).
@@ -111,11 +112,11 @@
     document.body.appendChild(gate);
     var input = document.getElementById('gatePin');
     var err = document.getElementById('gateErr');
-    // Locked again because nobody used the page for 5 minutes: say so.
+    // Locked again because nobody used the page for 30 minutes: say so.
     try {
       if (sessionStorage.getItem(FC.IDLE_KEY)) {
         sessionStorage.removeItem(FC.IDLE_KEY);
-        document.getElementById('gateSub').textContent = 'Locked after 5 minutes without use. Type the 6-digit code again.';
+        document.getElementById('gateSub').textContent = 'Locked after 30 minutes without use. Type the 6-digit code again.';
       }
     } catch (e) { }
     var checking = false;
