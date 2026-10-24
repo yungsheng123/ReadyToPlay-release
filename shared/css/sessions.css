@@ -335,7 +335,33 @@ body.tagdragging { -webkit-user-select: none; user-select: none; cursor: grabbin
 /* New session, step 2: pick an earlier session to bring its players along */
 .srcfrom { display: flex; align-items: flex-start; gap: 8px; margin: 0 0 8px; font-size: 12px; color: var(--muted); }
 .srcfrom > span { padding-top: 5px; flex: none; }
-.srcfrom .tagrow { margin: 0; flex: 1; max-height: 74px; overflow-y: auto; }
+/* From and Tags: one row each that is swiped sideways (no scrollbar); a soft fade shows where more chips are hidden */
+.srcfrom .tagrow { position: relative; margin: 0; flex: 1; min-width: 0; flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; padding: 2px 0; scrollbar-width: none; }
+.srcfrom .tagrow::-webkit-scrollbar { display: none; }
+.srcfrom .tagrow > * { flex: none; white-space: nowrap; }
+.srcfrom .tagrow.fadeR { -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent); }
+.srcfrom .tagrow.fadeL { -webkit-mask-image: linear-gradient(90deg, transparent, #000 28px); mask-image: linear-gradient(90deg, transparent, #000 28px); }
+.srcfrom .tagrow.fadeL.fadeR { -webkit-mask-image: linear-gradient(90deg, transparent, #000 28px, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(90deg, transparent, #000 28px, #000 calc(100% - 28px), transparent); }
+#srcFilters[hidden] { display: none; }
+
+/* The filters are folded away: one line says what the list is narrowed to; tap it to open From and Tags */
+.srcfilter { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; margin: 0 0 8px; padding: 7px 12px; font: inherit; font-size: 13px;
+             color: var(--muted); background: var(--field); border: 1px solid var(--line); border-radius: 99px; cursor: pointer; text-align: left; }
+.srcfilter[hidden] { display: none; }
+.srcfilter.on { color: var(--green-text); }
+.srcfilter svg { width: 14px; height: 14px; flex: none; transition: transform .15s; }
+.srcfilter[aria-expanded="true"] svg { transform: rotate(180deg); }
+
+/* The player list: a slim scrollbar in the app's green that widens under the finger or mouse, and a soft fade at the bottom while there is more below */
+#srcWrap { position: relative; margin: 0 0 4px; }
+#srcWrap #srcList { margin: 0; scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--accent) 55%, transparent) transparent; }
+#srcList::-webkit-scrollbar { width: 6px; }
+#srcList::-webkit-scrollbar-track { background: transparent; }
+#srcList::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--accent) 55%, transparent); border-radius: 99px; }
+#srcList::-webkit-scrollbar-thumb:hover, #srcList::-webkit-scrollbar-thumb:active { background: var(--accent); }
+#srcWrap::after { content: ''; position: absolute; left: 1px; right: 9px; bottom: 1px; height: 30px; border-radius: 0 0 11px 11px; pointer-events: none; opacity: 0; transition: opacity .15s;
+                  background: linear-gradient(transparent, var(--card)); }
+#srcWrap.more::after { opacity: 1; }
 
 /* ---- Pickleball only: the new-session bottom sheet and its day strip (the rest of the design is shared, see fees.css) ---- */
 #sessionOverlay, #editOverlay, #bringOverlay { align-items: flex-end; padding: 0; }

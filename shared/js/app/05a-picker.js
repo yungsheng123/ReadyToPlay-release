@@ -16,6 +16,7 @@
   var tag = '';                // the tag the list is narrowed to ('' = every known player)
   var members = {};            // earlier session id -> { known player id: true }, read when that session is first picked
   var loading = false;
+  var filtersOpen = false;     // From and Tags are folded away until the Filter line is tapped
   var onChange = null;         // called after every drawing (the owner's button shows how many are ticked)
   var sessionOk = null;        // which earlier sessions are offered as buttons (null = all of them)
 
@@ -50,6 +51,7 @@
     tag = '';
     members = {};
     loading = false;
+    filtersOpen = false;
     sessionOk = opts.sessions || null;
     onChange = opts.onChange || null;
     FA.el('srcSearch').value = '';
@@ -80,8 +82,13 @@
     var scrolled = list.scrollTop;
     list.textContent = '';
     var rows = shown();
-    renderSessions();
-    renderTags();
+    var sessRow = FA.el('srcSessions'), tagRow = FA.el('srcTags');
+    var sessLeft = sessRow.scrollLeft, tagLeft = tagRow.scrollLeft;
+    var offered = renderSessions();
+    var tagCount = renderTags();
+    sessRow.scrollLeft = sessLeft;
+    tagRow.scrollLeft = tagLeft;
+    renderFilterLine(offered, tagCount);
     if (!rows.length) {
       var none = document.createElement('div');
       none.className = 'msg';
@@ -125,6 +132,7 @@
     var allOn = rows.length > 0 && rows.every(function (d) { return ticked[d.id]; });
     FA.el('srcAll').textContent = allOn ? 'Untick all' : 'Tick all';
     FA.el('srcAll').hidden = !rows.length;
+    fit();
     if (onChange) onChange();
   }
 
@@ -145,8 +153,52 @@
       b.textContent = t + ' ' + counts[t];
       box.appendChild(b);
     });
+    return names.length;
   }
 
+  // The Filter line: what the list is narrowed to, and the way to open From and Tags. Hidden when there is nothing to narrow by.
+  function renderFilterLine(offered, tagCount) {
+    var parts = [];
+    if (session) FA.sessions.forEach(function (x) { if (x.id === session) parts.push(FA.dayText(x.date, true)); });
+    if (tag) parts.push(tag);
+    var toggle = FA.el('srcFilterToggle');
+    var any = offered > 0 || tagCount > 0;
+    FA.el('srcFilterText').textContent = 'Filter: ' + (parts.length ? parts.join(' \u00b7 ') : 'all players');
+    toggle.classList.toggle('on', parts.length > 0);
+    toggle.setAttribute('aria-expanded', filtersOpen ? 'true' : 'false');
+    toggle.hidden = !any;
+    FA.el('srcFilters').hidden = !any || !filtersOpen;
+  }
+
+  FA.el('srcFilterToggle').addEventListener('click', function () {
+    filtersOpen = !filtersOpen;
+    FA.el('srcFilterToggle').setAttribute('aria-expanded', filtersOpen ? 'true' : 'false');
+    FA.el('srcFilters').hidden = !filtersOpen;
+    if (filtersOpen) {
+      // The chip that is on is brought into view in its row (the row is moved, not the page).
+      ['srcSessions', 'srcTags'].forEach(function (id) {
+        var row = FA.el(id), on = row.querySelector('.on');
+        if (on) row.scrollLeft = on.offsetLeft - (row.clientWidth - on.offsetWidth) / 2;
+      });
+    }
+    fit();
+  });
+
+  // The fades: at the ends of a chip row that has more to swipe to, and at the bottom of the player list while there is more below.
+  function fitRow(row) {
+    var max = row.scrollWidth - row.clientWidth;
+    row.classList.toggle('fadeL', row.scrollLeft > 2);
+    row.classList.toggle('fadeR', max > 2 && row.scrollLeft < max - 2);
+  }
+  function fit() {
+    var list = FA.el('srcList');
+    fitRow(FA.el('srcSessions'));
+    fitRow(FA.el('srcTags'));
+    FA.el('srcWrap').classList.toggle('more', list.scrollHeight - list.clientHeight - list.scrollTop > 2);
+  }
+  ['srcSessions', 'srcTags', 'srcList'].forEach(function (id) { FA.el(id).addEventListener('scroll', fit, { passive: true }); });
+  if (window.ResizeObserver) new ResizeObserver(fit).observe(root);   // the picker came on screen (or changed size): the fades follow
+  else window.addEventListener('resize', fit);
   FA.el('srcTags').addEventListener('click', function (e) {
     var b = e.target.closest('button[data-tag]');
     if (!b) return;
@@ -166,8 +218,10 @@
     all.setAttribute('data-sid', '');
     all.textContent = 'All players';
     box.appendChild(all);
+    var offered = 0;
     FA.sessions.forEach(function (x) {
       if (sessionOk && !sessionOk(x)) return;
+      offered++;
       var b = document.createElement('button');
       b.type = 'button';
       b.className = 'tagfilter' + (session === x.id ? ' on' : '');
@@ -175,6 +229,7 @@
       b.textContent = FA.dayText(x.date, true);
       box.appendChild(b);
     });
+    return offered;
   }
 
   // Narrows the list to the players who were in that earlier session ('' = everybody). Who was in it is asked for once.

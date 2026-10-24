@@ -343,11 +343,14 @@
             <div id="sessStep2" hidden>
                 <div class="srcdate"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="3" width="12" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M2 6.5h12M5.5 1.8v2.6M10.5 1.8v2.6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><b id="srcDate"></b></div>
                 <div id="srcPicker">
-                <div class="srcfrom"><span>From</span><div id="srcSessions" class="tagrow"></div></div>
-                <div class="srcfrom" id="srcTagsRow" hidden><span>Tags</span><div id="srcTags" class="tagrow"></div></div>
-                <input id="srcSearch" type="text" maxlength="60" placeholder="Search name or link" aria-label="Search players" autocomplete="off">
-                <div class="srcinfo"><span class="srcl"><span id="srcCount">0 ticked</span><button type="button" id="srcAll">Tick all</button></span><span>Last joined first</span></div>
-                <div id="srcList"></div>
+                    <button type="button" id="srcFilterToggle" class="srcfilter" aria-expanded="false" aria-controls="srcFilters"><span id="srcFilterText">Filter: all players</span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                    <div id="srcFilters" hidden>
+                        <div class="srcfrom"><span>From</span><div id="srcSessions" class="tagrow"></div></div>
+                        <div class="srcfrom" id="srcTagsRow" hidden><span>Tags</span><div id="srcTags" class="tagrow"></div></div>
+                    </div>
+                    <input id="srcSearch" type="text" maxlength="60" placeholder="Search name or link" aria-label="Search players" autocomplete="off">
+                    <div class="srcinfo"><span class="srcl"><span id="srcCount">0 ticked</span><button type="button" id="srcAll">Tick all</button></span><span>Last joined first</span></div>
+                    <div id="srcWrap"><div id="srcList"></div></div>
                 </div>
             </div>
             <div class="row" id="sessButtons">
