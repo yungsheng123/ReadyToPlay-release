@@ -35,13 +35,13 @@
 .hist .older { margin: 8px 2px 0; font-size: 12px; color: var(--muted); }
 
 /* New session popup (same look as the other popups) */
-#sessionOverlay, #editOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); align-items: center;
+#sessionOverlay, #editOverlay, #bringOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); align-items: center;
                   justify-content: center; padding: 16px; z-index: 10; }
-#sessionDialog, #editDialog { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 20px;
+#sessionDialog, #editDialog, #bringDialog { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 20px;
                  width: 100%; max-width: 340px; }
-#sessionTitle, #editTitle { font-size: 17px; font-weight: 500; margin: 0 0 4px; }
-#sessionSub, #editSub { font-size: 14px; color: var(--muted); margin: 0 0 14px; }
-#sessionSub.err, #editSub.err { color: var(--unpaid-text); }
+#sessionTitle, #editTitle, #bringTitle { font-size: 17px; font-weight: 500; margin: 0 0 4px; }
+#sessionSub, #editSub, #bringSub { font-size: 14px; color: var(--muted); margin: 0 0 14px; }
+#sessionSub.err, #editSub.err, #bringSub.err { color: var(--unpaid-text); }
 /* Month calendar for picking the session date */
 .calnav { display: flex; justify-content: space-between; align-items: center; margin: 0 0 6px; }
 .calnav b { font-weight: 500; font-size: 15px; }
@@ -253,7 +253,7 @@ button.tagfilter .spicon { margin-right: 5px; vertical-align: -2px; }
 #srcList .nm { display: block; font-weight: 500; overflow-wrap: anywhere; }
 #srcList .lk { display: block; font-size: 11px; color: var(--muted); overflow-wrap: anywhere; }
 #srcList .gm { flex: none; font-size: 11px; line-height: 1.35; text-align: right; color: var(--muted); white-space: nowrap; }
-#sessButtons, #editButtons { flex-wrap: wrap; }
+#sessButtons, #editButtons, #bringButtons { flex-wrap: wrap; }
 
 /* Guest view: amounts are shown as hashes */
 .hist .pr.hash { color: var(--muted); letter-spacing: 1px; }
@@ -338,11 +338,11 @@ body.tagdragging { -webkit-user-select: none; user-select: none; cursor: grabbin
 .srcfrom .tagrow { margin: 0; flex: 1; max-height: 74px; overflow-y: auto; }
 
 /* ---- Pickleball only: the new-session bottom sheet and its day strip (the rest of the design is shared, see fees.css) ---- */
-#sessionOverlay, #editOverlay { align-items: flex-end; padding: 0; }
-#sessionDialog, #editDialog { max-width: 480px; max-height: 92vh; overflow-y: auto; border-radius: 22px 22px 0 0; border-bottom: none; padding-bottom: calc(16px + env(safe-area-inset-bottom));
+#sessionOverlay, #editOverlay, #bringOverlay { align-items: flex-end; padding: 0; }
+#sessionDialog, #editDialog, #bringDialog { max-width: 480px; max-height: 92vh; overflow-y: auto; border-radius: 22px 22px 0 0; border-bottom: none; padding-bottom: calc(16px + env(safe-area-inset-bottom));
                  animation: sheetUp .22s ease; }
-#sessionDialog::before, #editDialog::before { content: ''; display: block; width: 38px; height: 4px; border-radius: 2px; background: var(--line); margin: -8px auto 12px; }
-#sessButtons, #editButtons { position: sticky; bottom: -16px; background: var(--card); padding: 10px 0 2px; }
+#sessionDialog::before, #editDialog::before, #bringDialog::before { content: ''; display: block; width: 38px; height: 4px; border-radius: 2px; background: var(--line); margin: -8px auto 12px; }
+#sessButtons, #editButtons, #bringButtons { position: sticky; bottom: -16px; background: var(--card); padding: 10px 0 2px; }
 
 /* New session date: a strip of the next days */
 .daystrip { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 2px 0 8px; margin: 0 -2px; }
@@ -381,7 +381,7 @@ body.tagdragging { -webkit-user-select: none; user-select: none; cursor: grabbin
 }
 
 /* Taller dialogs follow the visible screen on an iPhone (100vh there counts the part behind Safari's toolbar); the vh lines above stay for older browsers */
-#pmDialog, #sessionDialog, #editDialog { max-height: 92dvh; }
+#pmDialog, #sessionDialog, #editDialog, #bringDialog { max-height: 92dvh; }
 #viewList { max-height: 50dvh; }
 #qrOverlay img { max-height: calc(100dvh - 100px); }
 

@@ -4,7 +4,7 @@
   var FA = window.FeesApp = window.FeesApp || {};
   // What other files use from this one:
   FA.lastSessionWithPlayers = lastSessionWithPlayers;
-  FA.bringLastSession = bringLastSession;
+  FA.openBringPlayers = openBring;
   FA.knownById = knownById;
   FA.genderMark = genderMark;
   FA.queueList = queueList;
@@ -270,22 +270,59 @@
     return best;
   }
 
-  function bringLastSession() {
-    var from = lastSessionWithPlayers();
-    if (!from || FA.pBusy) return;
-    FA.pBusy = true;
-    FeesCore.api('GET', '/sessions/' + encodeURIComponent(from.id) + '/players', undefined, null)
-      .then(function (list) {
-        var entries = (list || []).filter(function (x) { return x.playerId; }).map(function (x) { return { playerId: x.playerId }; });
-        if (!entries.length) { FeesCore.showError('There are no saved players in that session to bring.'); return null; }
-        FA.pBusy = false;
-        return afterPlayerChange(function () { return FeesCore.api('POST', '/players/add-many', { entries: entries }); })
-          .then(function () { entries.forEach(function (e) { FA.markJoined(e.playerId); }); FA.renderPlayers(); });
-      })
-      .catch(function (err) { FeesCore.showError('Could not bring the players. ' + (err.body && (err.body.Message || err.body.message) ? (err.body.Message || err.body.message) : err.message)); })
-      .then(function () { FA.pBusy = false; });
+  // "Bring players" (the empty session's button): the same picker as page 2 of the new-session sheet, in a sheet of its own. It starts on the
+  // players of the most recent earlier session that had some; the host ticks who plays again, and Add puts them in the session.
+  var bringOverlay = FA.el('bringOverlay');
+
+  function updateBringButton() {
+    var n = FA.picker.ids().length;
+    FA.el('btnBringAdd').textContent = n ? 'Add ' + n + (n === 1 ? ' player' : ' players') : 'Add players';
   }
 
+  function bringMessage(text, isError) {
+    FA.el('bringSub').textContent = text;
+    FA.el('bringSub').className = isError ? 'err' : '';
+  }
+
+  function openBring() {
+    if (FA.pBusy || !bringOverlay) return;
+    var from = lastSessionWithPlayers();
+    bringMessage('Tick who plays again. They are added to this session.', false);
+    FA.picker.open({
+      host: FA.el('bringPickerHost'),
+      session: from ? from.id : '',
+      sessions: function (s) { return s.id !== FA.currentId && s.players > 0; },   // the earlier sessions that had players
+      onChange: updateBringButton
+    });
+    bringOverlay.style.display = 'flex';
+  }
+
+  function closeBring() {
+    if (!bringOverlay || bringOverlay.style.display !== 'flex') return;
+    bringOverlay.style.display = 'none';
+    FA.picker.home();   // the picker goes back to the new-session sheet
+  }
+
+  function addBrought() {
+    var ids = FA.picker.ids();
+    if (FA.pBusy) return;
+    if (!ids.length) { bringMessage('Tick at least one player.', true); return; }
+    var entries = ids.map(function (id) { return { playerId: id }; });
+    FA.el('btnBringAdd').disabled = true;
+    afterPlayerChange(function () { return FeesCore.api('POST', '/players/add-many', { entries: entries }); })
+      .then(function () { ids.forEach(function (id) { FA.markJoined(id); }); closeBring(); FA.renderPlayers(); })
+      .catch(function (err) {
+        bringMessage('Could not add the players. ' + (err.body && (err.body.Message || err.body.message) ? (err.body.Message || err.body.message) : err.message), true);
+      })
+      .then(function () { FA.pBusy = false; FA.el('btnBringAdd').disabled = false; });
+  }
+
+  if (bringOverlay) {
+    FA.el('btnBringCancel').addEventListener('click', closeBring);
+    FA.el('btnBringAdd').addEventListener('click', addBrought);
+    bringOverlay.addEventListener('click', function (e) { if (e.target === bringOverlay) closeBring(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeBring(); });
+  }
   function addKnown(id) {
     if (FA.pBusy || inSession(id)) return;
     afterPlayerChange(function () { return FeesCore.api('POST', '/players/add', { playerId: id }); })

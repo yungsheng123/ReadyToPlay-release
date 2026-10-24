@@ -3,7 +3,6 @@
 (function () {
   var FA = window.FeesApp = window.FeesApp || {};
   // What other files use from this one:
-  FA.playerMatches = playerMatches;
   FA.nowTimeText = nowTimeText;
   FA.clashOf = clashOf;
 
@@ -162,12 +161,6 @@
   // New session has two steps when there are known players to bring along: 1 Date, 2 Players. With nobody known
   // yet it is just the date.
   var sessStep = 1;
-  var bringing = {};          // ticked known players (by id) to add to the new session
-  var srcFilter = '';         // what was typed in the search box of step 2
-  var srcSession = '';        // the earlier session the list of step 2 is narrowed to ('' = every known player)
-  var srcTag = '';            // the tag the list of step 2 is narrowed to ('' = every known player)
-  var srcMembers = {};        // earlier session id -> { known player id: true }, read when that session is first picked
-  var srcLoading = false;
 
   // The players to bring along are this page's own sport's.
   function hasPlayersToBring() { return FA.directory.length > 0 && (!sessSport || sessSport === FA.SPORT); }
@@ -200,26 +193,6 @@
     showSessionStep(1);
   });
 
-  function playerMatches(d, needle) {
-    return !needle || d.name.toLowerCase().indexOf(needle) !== -1 || (d.link || '').toLowerCase().indexOf(needle) !== -1
-      || FA.tagsOf(d).some(function (t) { return t.toLowerCase().indexOf(needle) !== -1; });
-  }
-
-  // Every known player, whoever joined a session most recently first (a player who never joined one comes
-  // last, by name). The date is not used to leave anybody out.
-  function byLastJoined() {
-    return FA.directory.slice().sort(function (a, b) {
-      var x = a.lastJoined || '', y = b.lastJoined || '';
-      if (x !== y) return x < y ? 1 : -1;
-      return a.name.localeCompare(b.name);
-    });
-  }
-
-  // The ticked players in the order of the list.
-  function bringingIds() {
-    return byLastJoined().filter(function (d) { return bringing[d.id]; }).map(function (d) { return d.id; });
-  }
-
   var sessPicking = false;    // the "Session History" list is showing (copy an earlier session's details)
 
   function showSessionStep(step) {
@@ -249,158 +222,9 @@
 
   function updateSessionButtons() {
     var create = FA.el('btnSessionCreate');
-    if (sessStep === 2) { var n = bringingIds().length; create.textContent = n ? 'Create session with ' + n + (n === 1 ? ' player' : ' players') : 'Create session'; }
+    if (sessStep === 2) { var n = FA.picker.ids().length; create.textContent = n ? 'Create session with ' + n + (n === 1 ? ' player' : ' players') : 'Create session'; }
     else create.textContent = hasPlayersToBring() ? 'Next' : 'Create session';
   }
-
-  // Step 2: every known player with a tick square, the most recent joiner first, and what they last did.
-  function renderSources() {
-    var list = FA.el('srcList');
-    var scrolled = list.scrollTop;
-    list.textContent = '';
-    var needle = srcFilter.trim().toLowerCase();
-    var rows = byLastJoined().filter(function (d) { return FA.playerMatches(d, needle) && inPickedSession(d) && inPickedTag(d); });
-    renderSourceSessions();
-    renderSourceTags();
-    if (!rows.length) {
-      var none = document.createElement('div');
-      none.className = 'msg';
-      none.textContent = srcLoading ? 'Loading...' : srcSession || srcTag ? 'Nobody matches.' : FA.directory.length ? 'No player matches.' : 'There are no players yet.';
-      list.appendChild(none);
-    }
-    rows.forEach(function (d) {
-      var b = document.createElement('button');
-      b.type = 'button';
-      var on = !!bringing[d.id];
-      b.className = on ? 'on' : '';
-      b.setAttribute('data-pid', d.id);
-      var sq = document.createElement('span');
-      sq.className = 'sq';
-      if (on) sq.innerHTML = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 4.8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-      var who = document.createElement('span');
-      who.className = 'srcwho';
-      var nm = document.createElement('span');
-      nm.className = 'nm';
-      nm.textContent = d.name;
-      who.appendChild(nm);
-      if (FA.tagsOf(d).length) {
-        var lk = document.createElement('span');
-        lk.className = 'lk';
-        lk.textContent = FA.tagsOf(d).join(' \u00b7 ');
-        who.appendChild(lk);
-      }
-      var gm = document.createElement('span');
-      gm.className = 'gm';
-      gm.appendChild(document.createTextNode(d.games + (d.games === 1 ? ' game' : ' games')));
-      gm.appendChild(document.createElement('br'));
-      gm.appendChild(document.createTextNode(d.lastJoined ? FA.prettyDate(d.lastJoined, true) : 'Not yet'));
-      b.appendChild(sq);
-      b.appendChild(who);
-      b.appendChild(gm);
-      list.appendChild(b);
-    });
-    list.scrollTop = scrolled;
-    FA.el('srcCount').textContent = bringingIds().length + ' ticked';
-    // "Tick all" works on the players shown (so a search can be ticked in one go); when they are all ticked it unticks them.
-    var allOn = rows.length > 0 && rows.every(function (d) { return bringing[d.id]; });
-    FA.el('srcAll').textContent = allOn ? 'Untick all' : 'Tick all';
-    FA.el('srcAll').hidden = !rows.length;
-    updateSessionButtons();
-  }
-
-  // Is this known player in the earlier session the list is narrowed to (or no session is picked)?
-  function inPickedSession(d) {
-    if (!srcSession) return true;
-    var members = srcMembers[srcSession];
-    return !!members && !!members[d.id];
-  }
-
-  function inPickedTag(d) { return !srcTag || FA.tagsOf(d).indexOf(srcTag) !== -1; }
-
-  // The tags as buttons under "From", the one on the most players first (then by name): pick one to see only the players with it, then
-  // "Tick all" ticks them together. Picking the same tag again shows everybody.
-  function renderSourceTags() {
-    var counts = {};
-    FA.directory.forEach(function (d) { FA.tagsOf(d).forEach(function (t) { counts[t] = (counts[t] || 0) + 1; }); });
-    var names = Object.keys(counts).sort(function (a, b) { return counts[b] - counts[a] || a.localeCompare(b); });
-    var box = FA.el('srcTags');
-    box.textContent = '';
-    FA.el('srcTagsRow').hidden = !names.length;
-    names.forEach(function (t) {
-      var b = document.createElement('button');
-      b.type = 'button';
-      b.className = 'tagfilter' + (srcTag === t ? ' on' : '');
-      b.setAttribute('data-tag', t);
-      b.textContent = t + ' ' + counts[t];
-      box.appendChild(b);
-    });
-  }
-
-  FA.el('srcTags').addEventListener('click', function (e) {
-    var b = e.target.closest('button[data-tag]');
-    if (!b) return;
-    var t = b.getAttribute('data-tag');
-    srcTag = srcTag === t ? '' : t;
-    renderSources();
-  });
-
-  // The earlier sessions as buttons above the list: pick one to see only the players who were in it. What is ticked stays
-  // ticked when another one is picked, so players can be gathered from several sessions.
-  function renderSourceSessions() {
-    var box = FA.el('srcSessions');
-    box.textContent = '';
-    var all = document.createElement('button');
-    all.type = 'button';
-    all.className = 'tagfilter' + (srcSession ? '' : ' on');
-    all.setAttribute('data-sid', '');
-    all.textContent = 'All players';
-    box.appendChild(all);
-    FA.sessions.forEach(function (x) {
-      var b = document.createElement('button');
-      b.type = 'button';
-      b.className = 'tagfilter' + (srcSession === x.id ? ' on' : '');
-      b.setAttribute('data-sid', x.id);
-      b.textContent = FA.dayText(x.date, true);
-      box.appendChild(b);
-    });
-  }
-
-  FA.el('srcSessions').addEventListener('click', function (e) {
-    var b = e.target.closest('button[data-sid]');
-    if (!b) return;
-    var id = b.getAttribute('data-sid');
-    srcSession = srcSession === id ? '' : id;
-    if (!srcSession || srcMembers[srcSession]) { renderSources(); return; }
-    // Who was in that session: asked for once.
-    var asked = srcSession;
-    srcLoading = true;
-    renderSources();
-    FeesCore.api('GET', '/sessions/' + encodeURIComponent(asked) + '/players', undefined, null)
-      .then(function (players) {
-        var members = {};
-        (players || []).forEach(function (p) { if (p.playerId) members[p.playerId] = true; });
-        srcMembers[asked] = members;
-      })
-      .catch(function () { srcMembers[asked] = {}; if (srcSession === asked) FeesCore.showError('Could not read that session.'); })
-      .then(function () { srcLoading = false; renderSources(); });
-  });
-
-  FA.el('srcAll').addEventListener('click', function () {
-    var needle = srcFilter.trim().toLowerCase();
-    var rows = FA.directory.filter(function (d) { return FA.playerMatches(d, needle) && inPickedSession(d) && inPickedTag(d); });
-    var allOn = rows.length > 0 && rows.every(function (d) { return bringing[d.id]; });
-    rows.forEach(function (d) { bringing[d.id] = !allOn; });
-    renderSources();
-  });
-
-  FA.el('srcList').addEventListener('click', function (e) {
-    var b = e.target.closest('button[data-pid]');
-    if (!b) return;
-    var id = b.getAttribute('data-pid');
-    bringing[id] = !bringing[id];
-    renderSources();
-  });
-  FA.el('srcSearch').addEventListener('input', function () { srcFilter = FA.el('srcSearch').value; renderSources(); });
 
   // The court cost on the sheet is the calculator's Court price and quantity: what is typed here starts the new session's calculator. It begins
   // as the last session's court price and the sport's usual number of courts (for the other sport it is left blank: that sport starts from its own).
@@ -424,13 +248,7 @@
     picked = FA.todayIso();
     var now = new Date();
     shownMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    bringing = {};
-    srcFilter = '';
-    srcSession = '';
-    srcTag = '';
-    srcMembers = {};
-    srcLoading = false;
-    FA.el('srcSearch').value = '';
+    FA.picker.open({ host: FA.el('sessStep2'), onChange: updateSessionButtons });   // (page 2's own place; nothing ticked)
     FA.el('sessTitle').value = '';
     FA.el('sessLocation').value = '';
     FA.el('sessStart').value = '';
@@ -457,10 +275,11 @@
     if (sessStep === 1 && !checkTimes()) return;
     if (sessStep === 1 && hasPlayersToBring()) {
       showSessionStep(2);
-      renderSources();
+      FA.picker.home();
+      FA.picker.render();
       return;
     }
-    createSession(sessStep === 2 ? bringingIds() : []);
+    createSession(sessStep === 2 ? FA.picker.ids() : []);
   }
 
   function sessionBack() {

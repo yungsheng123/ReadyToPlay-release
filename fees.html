@@ -27,6 +27,7 @@
     <script src="shared/js/app/02-session-box.js" defer></script>
     <script src="shared/js/app/03-ranking.js" defer></script>
     <script src="shared/js/app/04-calc.js" defer></script>
+    <script src="shared/js/app/05a-picker.js" defer></script>
     <script src="shared/js/app/05-new-session.js" defer></script>
     <script src="shared/js/app/06-session-dialogs.js" defer></script>
     <script src="shared/js/app/07-money.js" defer></script>
@@ -341,16 +342,30 @@
             </div>
             <div id="sessStep2" hidden>
                 <div class="srcdate"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="3" width="12" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M2 6.5h12M5.5 1.8v2.6M10.5 1.8v2.6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><b id="srcDate"></b></div>
+                <div id="srcPicker">
                 <div class="srcfrom"><span>From</span><div id="srcSessions" class="tagrow"></div></div>
                 <div class="srcfrom" id="srcTagsRow" hidden><span>Tags</span><div id="srcTags" class="tagrow"></div></div>
                 <input id="srcSearch" type="text" maxlength="60" placeholder="Search name or link" aria-label="Search players" autocomplete="off">
                 <div class="srcinfo"><span class="srcl"><span id="srcCount">0 ticked</span><button type="button" id="srcAll">Tick all</button></span><span>Last joined first</span></div>
                 <div id="srcList"></div>
+                </div>
             </div>
             <div class="row" id="sessButtons">
                 <button type="button" id="btnSessionCancel">Cancel</button>
                 <button type="button" id="btnSessionSkip" hidden>Skip</button>
                 <button type="button" id="btnSessionCreate" class="primary">Create session</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="bringOverlay">
+        <div id="bringDialog" role="dialog" aria-modal="true" aria-labelledby="bringTitle">
+            <p id="bringTitle">Bring players</p>
+            <p id="bringSub">Tick who plays again. They are added to this session.</p>
+            <div id="bringPickerHost"></div>
+            <div class="row" id="bringButtons">
+                <button type="button" id="btnBringCancel">Cancel</button>
+                <button type="button" id="btnBringAdd" class="primary">Add players</button>
             </div>
         </div>
     </div>

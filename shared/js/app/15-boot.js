@@ -43,7 +43,7 @@
       card.appendChild(node('p', 'es-sub', 'Search above to add a player, or bring the usual group.'));
       var row = node('div', 'es-actions');
       var last = FA.lastSessionWithPlayers();
-      if (last) row.appendChild(button('Bring players from ' + FA.prettyDate(last.date, true), false, function () { FA.bringLastSession(); }));
+      if (last) row.appendChild(button('Bring players from ' + FA.prettyDate(last.date, true), false, function () { FA.openBringPlayers(); }));
       if (FA.guestCode) row.appendChild(button('Share guest link', false, copyGuestLink));
       if (row.firstChild) card.appendChild(row);
       return card;
