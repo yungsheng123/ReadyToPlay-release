@@ -95,7 +95,11 @@ try {
 
     Step 'Copying the release (the site shows a short "back soon" page meanwhile)'
     $offline = Join-Path $SiteDir 'app_offline.htm'
-    Set-Content $offline '<!doctype html><meta charset="utf-8"><title>Back soon</title><p style="font:16px sans-serif;margin:3em">Updating. Back in a minute.</p>'
+    # The page players see meanwhile travels with the release (_server\app_offline.htm: one self-contained file, nothing else can load while the site is off);
+    # a plain one is used when the release has none.
+    $offlinePage = Join-Path $ReleaseDir '_server\app_offline.htm'
+    if (Test-Path $offlinePage) { Copy-Item $offlinePage $offline -Force; Write-Host 'Showing the update page.' }
+    else { Set-Content $offline '<!doctype html><meta charset="utf-8"><meta http-equiv="refresh" content="5"><title>Back soon</title><p style="font:16px sans-serif;margin:3em">Updating. Back in a minute.</p>' }
     Start-Sleep -Seconds 4   # IIS unloads the application when it sees app_offline.htm; the files are free a moment later
     try {
         Robo $ReleaseDir $SiteDir @('/XF', 'secrets.config', 'app_offline.htm', '.gitignore', '.gitattributes', '/XD', '.git', '_server', 'App_Data', 'logs')

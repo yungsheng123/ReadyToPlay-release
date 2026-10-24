@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="refresh" content="5">
+<meta name="robots" content="noindex">
+<title>Back soon</title>
+<style>
+:root { --bg: #0f1c14; --card: #14241a; --line: #2b4634; --text: #e6efe8; --muted: #9db5a4; --accent: #4ee08a; --spark: #ffd34e; }
+@media (prefers-color-scheme: light) { :root { --bg: #eef5ef; --card: #ffffff; --line: #cfe0d3; --text: #17301f; --muted: #5d7a66; --accent: #2fa862; --spark: #e0a800; } }
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body { display: flex; align-items: center; justify-content: center; padding: 16px; background: var(--bg); color: var(--text); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+.card { width: 100%; max-width: 360px; padding: 26px 22px 24px; text-align: center; background: var(--card); border: 1px solid var(--line); border-radius: 20px; }
+svg { width: 220px; max-width: 100%; height: auto; }
+h1 { margin: 8px 0 4px; font-size: 21px; font-weight: 600; }
+p { margin: 0; color: var(--muted); font-size: 15px; }
+.bar { width: 160px; height: 5px; margin: 18px auto 0; background: var(--line); border-radius: 99px; overflow: hidden; }
+.bar i { display: block; width: 40%; height: 100%; background: var(--accent); border-radius: 99px; animation: slide 1.6s ease-in-out infinite; }
+.handle { fill: var(--muted); }
+.paddle { fill: var(--accent); }
+.frame { fill: none; stroke: var(--text); stroke-width: 3; }
+.strings { stroke: var(--muted); stroke-width: 1; }
+.spark { stroke: var(--spark); stroke-width: 2.2; stroke-linecap: round; fill: none; }
+.l { transform-origin: 70px 98px; animation: swingL 1.8s ease-in-out infinite; }
+.r { transform-origin: 150px 98px; animation: swingR 1.8s ease-in-out infinite; }
+.s { transform-origin: 110px 40px; animation: spark 1.8s ease-out infinite; }
+@keyframes swingL { 0%, 100% { transform: rotate(-28deg); } 40%, 60% { transform: rotate(12deg); } }
+@keyframes swingR { 0%, 100% { transform: rotate(28deg); } 40%, 60% { transform: rotate(-12deg); } }
+@keyframes spark { 0%, 30% { opacity: 0; transform: scale(.3); } 45% { opacity: 1; transform: scale(1.15); } 65%, 100% { opacity: 0; transform: scale(1.4); } }
+@keyframes slide { 0% { margin-left: -40%; } 100% { margin-left: 100%; } }
+@media (prefers-reduced-motion: reduce) { .l, .r, .s, .bar i { animation: none; } .s { opacity: 1; } .bar i { width: 100%; } }
+</style>
+</head>
+<body>
+<main class="card">
+<svg viewBox="0 0 220 110" role="img" aria-label="A pickleball paddle and a badminton racket tap each other">
+<g class="l"><rect class="handle" x="66" y="60" width="8" height="38" rx="3"/><rect class="paddle" x="50" y="22" width="40" height="42" rx="14"/></g>
+<g class="r"><rect class="handle" x="146" y="64" width="6" height="34" rx="3"/><ellipse class="frame" cx="149" cy="40" rx="20" ry="26"/><path class="strings" d="M137 28h24M135 38h28M137 48h24M149 16v48"/></g>
+<g class="s"><path class="spark" d="M110 24v-8M110 56v8M94 40h-8M126 40h8M98 28l-5-5M122 52l5 5M122 28l5-5M98 52l-5 5"/></g>
+</svg>
+<h1>High five while we update</h1>
+<p>One more minute. This page refreshes by itself.</p>
+<div class="bar" aria-hidden="true"><i></i></div>
+</main>
+</body>
+</html>
