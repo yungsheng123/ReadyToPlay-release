@@ -43,7 +43,7 @@
   FA.ledgerCount = 0;
   FA.directory = [];     // known players (owner only): { id, name, link, games }
   FA.ranking = [];       // top 10 by games, for everyone: { id, name, link, games }
-  FA.currentId = null;   // the session on screen: the one created most recently
+  FA.currentId = null;   // the session on screen: the one picked, or else the next one to be held
   FA.creating = false;
 
   FA.TRASH = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.8 4.5h10.4M6.2 4.5V3h3.6v1.5M4.2 4.5l.6 8.3h6.4l.6-8.3M6.8 7v3.8M9.2 7v3.8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';

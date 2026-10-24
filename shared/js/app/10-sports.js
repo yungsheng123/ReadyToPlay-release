@@ -43,10 +43,30 @@
     tag.hidden = !st;
     tag.textContent = st === 'past' ? 'Past' : st === 'ended' ? 'Ended' : '';
     tag.className = 'stag ' + st;
-    // An older session shown on the page (not the latest one made): a note, and the way back.
-    var newest = '';
-    FA.sessions.forEach(function (s) { if (s.id > newest) newest = s.id; });
-    FA.el('pastBanner').hidden = !(st === 'past' && cur.id !== newest && !FA.guest());
+    // An older session shown on the page (not the one the page shows by itself): a note, and the way back.
+    FA.el('pastBanner').hidden = !(st === 'past' && cur.id !== nextToBeHeldId() && !FA.guest());
+  }
+
+  // The session the page shows when none is picked (the same rule as SessionTimes.ChooseCurrent on the server): the soonest session that has not
+  // been and gone. On the earliest day from today on that is the earliest start that has not ended; when everything on today has ended the last one
+  // stays; with nothing from today on, the session held most recently.
+  function nextToBeHeldId() {
+    var today = FA.todayIso(), now = FA.nowTimeText();
+    var all = FA.sessions.slice();
+    function start(s) { return s.startTime || ''; }
+    function later(a, b) { return a.date !== b.date ? (a.date < b.date ? 1 : -1) : start(a) !== start(b) ? (start(a) < start(b) ? 1 : -1) : (a.id < b.id ? 1 : -1); }
+    function sooner(a, b) { return -later(a, b); }
+    var fromToday = all.filter(function (s) { return s.date >= today; });
+    if (!fromToday.length) { all.sort(later); return all.length ? all[0].id : null; }
+    var day = fromToday.map(function (s) { return s.date; }).sort()[0];
+    var onDay = fromToday.filter(function (s) { return s.date === day; });
+    if (day === today) {
+      var live = onDay.filter(function (s) { return !(s.endTime && s.endTime < now); });
+      if (!live.length) { onDay.sort(later); return onDay[0].id; }
+      onDay = live;
+    }
+    onDay.sort(sooner);
+    return onDay[0].id;
   }
 
   // A host who runs more than one sport: the balance and the current session say which sport they are for.

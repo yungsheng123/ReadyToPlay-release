@@ -30,7 +30,7 @@
       .then(function () { FA.switching = false; });
   }
 
-  // The picked session is dropped: the most recently created one is on the page again.
+  // The picked session is dropped: the next session to be held is on the page again.
   function backToLatest() {
     if (FA.switching) return;
     FA.switching = true;
