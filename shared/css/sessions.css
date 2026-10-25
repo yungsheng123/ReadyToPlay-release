@@ -352,13 +352,9 @@ body.tagdragging { -webkit-user-select: none; user-select: none; cursor: grabbin
 .srcfilter svg { width: 14px; height: 14px; flex: none; transition: transform .15s; }
 .srcfilter[aria-expanded="true"] svg { transform: rotate(180deg); }
 
-/* The player list: a slim scrollbar in the app's green that widens under the finger or mouse, and a soft fade at the bottom while there is more below */
+/* The player list: a soft fade at the bottom while there is more below (its scrollbar is the app-wide one, see fees.css) */
 #srcWrap { position: relative; margin: 0 0 4px; }
-#srcWrap #srcList { margin: 0; scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--accent) 55%, transparent) transparent; }
-#srcList::-webkit-scrollbar { width: 6px; }
-#srcList::-webkit-scrollbar-track { background: transparent; }
-#srcList::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--accent) 55%, transparent); border-radius: 99px; }
-#srcList::-webkit-scrollbar-thumb:hover, #srcList::-webkit-scrollbar-thumb:active { background: var(--accent); }
+#srcWrap #srcList { margin: 0; }
 #srcWrap::after { content: ''; position: absolute; left: 1px; right: 9px; bottom: 1px; height: 30px; border-radius: 0 0 11px 11px; pointer-events: none; opacity: 0; transition: opacity .15s;
                   background: linear-gradient(transparent, var(--card)); }
 #srcWrap.more::after { opacity: 1; }

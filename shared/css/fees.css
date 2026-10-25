@@ -18,6 +18,18 @@
   }
 }
 [hidden] { display: none !important; }
+/* Scrollbars: ONE slim style for every scrolling area, so a new list, dialog or panel needs nothing of its own (do not style a scrollbar on a single
+   element). A slim pill in the app's green, a little see-through and solid under the pointer; no track, no arrow buttons. Rows that are swiped
+   sideways (.daystrip, the chip rows) hide theirs on purpose, with their own rule, which wins over this one.
+   Chrome, Edge and Safari take the ::-webkit-scrollbar rules (those are ignored in Chrome once scrollbar-width or scrollbar-color is set, which is
+   why Firefox, the one browser without them, gets its own block). */
+:root { --sb-thumb: color-mix(in srgb, var(--accent) 55%, transparent); --sb-thumb-hover: var(--accent); }
+::-webkit-scrollbar { width: 9px; height: 9px; }
+::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
+::-webkit-scrollbar-track, ::-webkit-scrollbar-corner { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--sb-thumb); background-clip: padding-box; border: 2px solid transparent; border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover, ::-webkit-scrollbar-thumb:active { background: var(--sb-thumb-hover); background-clip: padding-box; }
+@supports (-moz-appearance: none) { * { scrollbar-width: thin; scrollbar-color: var(--sb-thumb) transparent; } }
 * { box-sizing: border-box; }
 body { margin: 0; padding: 0 16px 24px; background: var(--bg); color: var(--text);
        font-family: system-ui, -apple-system, "Segoe UI", sans-serif; font-size: 16px; }
