@@ -188,10 +188,14 @@
   function toggleQueue(id) {
     if (!id || inSession(id) || !FA.knownById(id)) return;
     FA.queueList();
-    if (inQueue(id)) queue = queue.filter(function (e) { return e.id !== id; }); else queue.push({ id: id });
+    var picked = !inQueue(id);
+    if (picked) queue.push({ id: id }); else queue = queue.filter(function (e) { return e.id !== id; });
     queueSession = FA.currentId;
+    // A player picked from the list is what was being typed: the text goes (else Add would also put the half-typed name in as a guest).
+    if (picked) { FA.pSearch.value = ''; pDrop.hidden = true; addGender = 'M'; }
     renderTray();
-    renderDrop();   // the list stays open: a picked player shows ticked
+    renderDrop();
+    if (picked) FA.pSearch.focus();
   }
 
   // A typed name as a guest (no unique link, not on the ranking): into the Adding players row, not straight into the list.
