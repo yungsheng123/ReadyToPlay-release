@@ -22,6 +22,7 @@
 
   function render() {
     list.textContent = '';
+    list.scrollTop = 0;
     var shown = entries.filter(function (e) { return filter === 'all' || GROUPS[e.kind] === filter; });
     if (!shown.length) {
       var none = document.createElement('p');
@@ -41,7 +42,7 @@
         last = day;
       }
       var row = document.createElement('div');
-      row.className = 'actrow ' + (GROUPS[e.kind] || '');
+      row.className = 'actrow' + (GROUPS[e.kind] ? ' k-' + GROUPS[e.kind] : '');   // (a plain 'session' class would pick up the home page's session box style)
       var time = document.createElement('span');
       time.className = 'actt';
       time.textContent = d.toLocaleTimeString('en-GB', { hour: 'numeric', minute: '2-digit', hour12: true });
@@ -96,6 +97,7 @@
     render();
   });
   document.getElementById('btnActClose').addEventListener('click', close);
+  document.getElementById('btnActX').addEventListener('click', close);   // the same, pinned at the top right
   overlay.addEventListener('click', function (e) { if (e.target === overlay) close(); });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
 })();

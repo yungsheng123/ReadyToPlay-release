@@ -355,10 +355,15 @@
     <div id="histOverlay">
         <div id="histDialog" role="dialog" aria-modal="true" aria-labelledby="histTitle">
             <section class="hist" id="history">
-                <h2><span id="histTitle">Session history</span> <span id="histNote">last 30 sessions</span></h2>
+                <div class="histhead">
+                    <h2><span id="histTitle">Session history</span> <span id="histNote">last 30 sessions</span></h2>
+                    <button type="button" id="btnHistX" class="dlgx" aria-label="Close session history"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+                </div>
                 <div class="histtabs" id="histTabs" role="tablist"><button type="button" role="tab" id="histTabUp" data-tab="upcoming">Upcoming</button><button type="button" role="tab" id="histTabPast" data-tab="past">Past</button></div>
-                <ul id="histList"></ul>
-                <p class="older" id="older" hidden></p>
+                <div id="histScroll">
+                    <ul id="histList"></ul>
+                    <p class="older" id="older" hidden></p>
+                </div>
             </section>
             <div class="row"><button type="button" id="btnHistClose" class="primary">Close</button></div>
         </div>

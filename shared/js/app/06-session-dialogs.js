@@ -144,7 +144,7 @@
   var histOverlay = FA.el('histOverlay');
   function closeHistory() { histOverlay.style.display = 'none'; }
   FA.histTab = '';   // 'upcoming' or 'past' ('' = Upcoming when there is a coming session, else Past)
-  function openHistory(tab) { FA.histTab = tab || ''; FA.renderHistory(); histOverlay.style.display = 'flex'; FA.fitDetails(); }
+  function openHistory(tab) { FA.histTab = tab || ''; FA.renderHistory(); histOverlay.style.display = 'flex'; FA.el('histScroll').scrollTop = 0; FA.fitDetails(); }
   FA.el('btnHistory').addEventListener('click', function () { openHistory(''); });
   if (FA.el('sessUpcoming')) FA.el('sessUpcoming').addEventListener('click', function () {
     var next = FA.el('sessUpcoming').getAttribute('data-next');
@@ -158,6 +158,7 @@
     FA.renderHistory();
   });
   FA.el('btnHistClose').addEventListener('click', closeHistory);
+  FA.el('btnHistX').addEventListener('click', closeHistory);   // the same, pinned at the top right
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeHistory(); });
 
   // ---- Edit session: title, times, location, court cost and description of the current session (not its date) ------------------------

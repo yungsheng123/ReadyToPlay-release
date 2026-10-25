@@ -541,9 +541,14 @@ body.has-tabs main.feesview { padding-bottom: 72px; }
 
 /* View History popup */
 #histOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); align-items: center; justify-content: center; padding: 16px; z-index: 10; }
-#histDialog { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 16px; width: 100%; max-width: 420px; max-height: 86vh; max-height: 86dvh; overflow-y: auto; }
-#histDialog .hist { margin-top: 0; }
-#histDialog .row { display: flex; margin-top: 12px; }
+/* The dialog keeps its title, close button, tabs and bottom Close in view: only the list scrolls */
+#histDialog { background: var(--card); border: 1px solid var(--line); border-radius: 18px; width: 100%; max-width: 420px; max-height: 86vh; max-height: 86dvh; display: flex; flex-direction: column; overflow: hidden; }
+#histDialog .hist { flex: 1; min-height: 0; margin-top: 0; display: flex; flex-direction: column; }
+.histhead { flex: none; display: flex; align-items: flex-start; gap: 8px; padding: 14px 10px 0 16px; }
+.histhead h2 { flex: 1; min-width: 0; margin: 12px 0 8px; }
+#histDialog .histtabs { flex: none; margin: 0; padding: 0 16px 10px; }
+#histScroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 0 16px 10px; }
+#histDialog .row { flex: none; display: flex; padding: 10px 16px calc(12px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); background: var(--card); }
 #histDialog .row button { width: 100%; min-height: 44px; }
 .hist li .what .htitle { font-size: 13px; font-weight: 500; color: var(--text); margin-top: 1px; overflow-wrap: anywhere; }
 
@@ -748,16 +753,24 @@ body.booting #ring, body.booting .balbtns, body.booting #btnHideBal, body.bootin
 
 /* The Activity view */
 #actOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); align-items: center; justify-content: center; padding: 16px; z-index: 10; }
-#actDialog { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 16px; width: 100%; max-width: 440px; max-height: 86vh; max-height: 86dvh; overflow-y: auto; }
+/* The dialog keeps its title, close button, filters and bottom Close in view: only the list scrolls */
+#actDialog { background: var(--card); border: 1px solid var(--line); border-radius: 18px; width: 100%; max-width: 440px; max-height: 86vh; max-height: 86dvh; display: flex; flex-direction: column; overflow: hidden; }
+.acthead { flex: none; display: flex; align-items: flex-start; gap: 8px; padding: 14px 10px 6px 16px; }
+.acthead .acttext { flex: 1; min-width: 0; }
 #actTitle { margin: 0 0 2px; font-size: 18px; font-weight: 600; }
-#actSub { margin: 0 0 10px; font-size: 13px; color: var(--muted); }
-#actChips { margin: 0 0 8px; }
+#actSub { margin: 0; font-size: 13px; color: var(--muted); }
+.dlgx { flex: none; width: 44px; height: 44px; margin: -4px 0 0; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; border: 1px solid var(--line); background: var(--field); color: var(--text); cursor: pointer; }
+.dlgx svg { width: 18px; height: 18px; }
+#actChips { flex: none; margin: 0; padding: 4px 16px 8px; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+#actChips::-webkit-scrollbar { display: none; }
+#actChips > * { flex: none; white-space: nowrap; }
+#actList { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 0 16px 8px; }
 #actList h4 { margin: 12px 0 4px; font-size: 12px; font-weight: 600; color: var(--muted); text-transform: none; }
 .actrow { display: flex; gap: 10px; padding: 8px 0; border-top: 1px solid var(--line); font-size: 14px; }
 .actrow .actt { flex: none; width: 64px; font-size: 12px; color: var(--muted); padding-top: 2px; }
 .actrow .actb { min-width: 0; display: flex; flex-direction: column; gap: 2px; overflow-wrap: anywhere; }
 .actrow .actb i { font-style: normal; font-size: 11px; color: var(--muted); }
-.actrow.security .actb span { color: var(--unpaid-chip-text); }
+.actrow.k-security .actb span { color: var(--unpaid-chip-text); }
 .actnone { margin: 14px 0; text-align: center; color: var(--muted); font-size: 13px; }
-#actDialog .row { display: flex; margin-top: 12px; }
+#actDialog .row { flex: none; display: flex; padding: 10px 16px calc(12px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); background: var(--card); }
 #actDialog .row button { width: 100%; min-height: 44px; }
