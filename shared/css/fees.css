@@ -512,7 +512,11 @@ body:not(.readonly) .logobadge { display: inline-flex; }
 .p.tile.avc.guestp .av { background: var(--field); color: var(--muted); }
 .p.tile.avc.paid .av::after { content: '\2713'; position: absolute; right: -5px; bottom: -5px; width: 17px; height: 17px; border-radius: 50%; display: flex; align-items: center;
                               justify-content: center; font-size: 11px; font-weight: 700; line-height: 1; background: var(--paid-chip-text); color: var(--paid-bg); box-shadow: 0 0 0 1.5px var(--card); }
-.avimg { display: block; width: 100%; height: 100%; border-radius: 50%; }
+/* The avatar picture fills its round box by absolute positioning (a percent height inside a box whose height comes from aspect-ratio is not reliable
+   in Safari, which left a ring of the box's red or green background showing); the box itself has no background of its own. */
+.avimg { position: absolute; top: 0; right: 0; bottom: 0; left: 0; display: block; width: 100%; height: 100%; border-radius: 50%; }
+.p.tile .av { position: relative; }
+.p.tile.avc .av { background: none; }
 .p.tile.avc.picked .av { box-shadow: 0 0 0 3px var(--accent); }
 .p.tile.avc.picked .av::before { content: '\2713'; position: absolute; right: -6px; top: -6px; z-index: 1; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
                                  font-size: 12px; font-weight: 700; line-height: 1; background: var(--accent); color: var(--accent-text); box-shadow: 0 0 0 1.5px var(--card); }
