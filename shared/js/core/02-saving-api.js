@@ -171,15 +171,15 @@
         row.className = 'p ' + state + (tiles ? ' tile' : '') + (FC.cfg.bulkEdit && FC.selected[p.id] ? ' picked' : '');
         var acts = document.createElement('div');
         acts.className = 'acts';
-        acts.appendChild(FC.iconButton('rename', 'Rename ' + p.name, p.id, FC.PENCIL));
         if (FC.cfg.bulkEdit) {
-          // Tick boxes instead of a trash icon: tick people, then use the bar at the bottom.
+          // Select mode: tick players (no pencil, no trash: a player is edited from their own popup), then use the bar at the bottom.
           row.setAttribute('data-pid', p.id);
           var tick = FC.iconButton('select', (FC.selected[p.id] ? 'Untick ' : 'Tick ') + p.name, p.id, FC.selected[p.id] ? FC.TICK : '');
           tick.classList.add('chk');
           tick.setAttribute('aria-pressed', FC.selected[p.id] ? 'true' : 'false');
           acts.appendChild(tick);
         } else {
+          acts.appendChild(FC.iconButton('rename', 'Rename ' + p.name, p.id, FC.PENCIL));
           acts.appendChild(FC.iconButton('remove', 'Remove ' + p.name, p.id, FC.TRASH));
         }
         if (avatar) row.appendChild(avatar);

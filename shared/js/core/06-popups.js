@@ -121,7 +121,7 @@
 
   document.getElementById('btnConfirm').addEventListener('click', function () {
     if (FC.busy || FC.pendingId === null) return;
-    if (FC.pendingAction === 'bulk-paid' || FC.pendingAction === 'bulk-remove') { FC.runBulk(FC.pendingAction); return; }
+    if (FC.pendingAction === 'bulk-paid' || FC.pendingAction === 'bulk-unpaid' || FC.pendingAction === 'bulk-remove') { FC.runBulk(FC.pendingAction); return; }
     var p = FC.findById(FC.pendingId);
     if (!p) { FC.closeDialog(); return; }
     if (FC.pendingAction === 'rename') {

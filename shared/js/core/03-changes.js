@@ -5,6 +5,7 @@
   // What other files use from this one:
   FC.noteListChanges = noteListChanges;
   FC.renderChips = renderChips;
+  FC.canSelect = canSelect;
   FC.peopleChanged = peopleChanged;
   FC.findById = findById;
   FC.closeDlgMenu = closeDlgMenu;
@@ -72,12 +73,35 @@
   }
 
   // The filter chips above the tiles: All / Unpaid / Paid / Female / Male, each with its count (the last two show the gender symbol).
+  // Who may tick players and mark them paid or unpaid in one go ("Select"): the Master Admin and the Sub Admin (the Sub Admin has no Remove), on
+  // pages that have it (cfg.bulkEdit), never a guest.
+  function canSelect() { return !!FC.cfg.bulkEdit && !FC.viewOnly && (!FC.readOnly || FC.admin); }
+
   function renderChips(paidCount) {
     if (!FC.chipsEl) return;
-    FC.chipsEl.hidden = !FC.cfg.tiles || !FC.people.length || FC.editing;   // (a guest gets All, female and male: how many are coming, not who has paid)
-    if (FC.sortRow) { FC.sortRow.hidden = FC.chipsEl.hidden; FC.paintSort(); }
+    var selecting = FC.editing && canSelect();
+    FC.chipsEl.hidden = !FC.cfg.tiles || !FC.people.length || (FC.editing && !selecting);   // (a guest gets All, female and male: how many are coming, not who has paid)
+    if (FC.sortRow) {
+      FC.sortRow.hidden = FC.chipsEl.hidden || selecting;
+      var selBtn = FC.sortRow.querySelector('.selbtn');
+      if (selBtn) selBtn.hidden = !canSelect();
+      FC.paintSort();
+    }
     if (FC.chipsEl.hidden) return;
     FC.chipsEl.textContent = '';
+    if (selecting) {
+      // Select mode: shortcuts to tick the unpaid or everybody, and Done to leave (the filter chips come back).
+      var unpaidCount = FC.people.length - paidCount;
+      [['unpaid', 'Select unpaid ' + unpaidCount], ['all', 'Select all ' + FC.people.length], ['done', 'Done']].forEach(function (c) {
+        var sb = document.createElement('button');
+        sb.type = 'button';
+        sb.className = 'chip' + (c[0] === 'done' ? ' done' : '');
+        sb.setAttribute('data-s', c[0]);
+        sb.textContent = c[1];
+        FC.chipsEl.appendChild(sb);
+      });
+      return;
+    }
     var females = FC.people.filter(function (p) { return p.gender === 'F'; }).length;
     [['all', 'All', FC.people.length], ['unpaid', 'Unpaid', FC.people.length - paidCount], ['paid', 'Paid', paidCount],
      ['female', '\u2640\ufe0e', females, 'Female'], ['male', '\u2642\ufe0e', FC.people.length - females, 'Male']].filter(function (c) {
@@ -93,6 +117,8 @@
     });
   }
   if (FC.chipsEl) FC.chipsEl.addEventListener('click', function (e) {
+    var s = e.target.closest('button[data-s]');
+    if (s) { FC.selectChip(s.getAttribute('data-s')); return; }   // (04-edit-mode.js)
     var b = e.target.closest('button[data-f]');
     if (!b) return;
     var picked = b.getAttribute('data-f');

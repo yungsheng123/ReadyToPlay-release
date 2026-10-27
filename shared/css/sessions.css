@@ -532,6 +532,7 @@ body.readonly .smorewrap, body[data-guest] .smorewrap { display: none !important
 #btnNewSession.fab { position: fixed; right: 16px; bottom: calc(78px + env(safe-area-inset-bottom)); z-index: 9; width: 56px; height: 56px; padding: 0; border-radius: 50%;
                      display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 300; line-height: 1; box-shadow: 0 6px 18px rgba(0, 0, 0, .3); }
 #btnNewSession.fab[hidden] { display: none; }
+body.has-bulk #btnNewSession.fab { display: none; }   /* (select mode: the bar at the bottom takes its place) */
 body[data-view]:not([data-view="fees"]) #btnNewSession { display: none; }
 body.has-tabs main.feesview { padding-bottom: 72px; }
 
@@ -705,9 +706,9 @@ button.showbtn { align-self: flex-start; width: auto; display: inline-flex; marg
 .hist li .what > span:first-child i { margin-left: 0; white-space: nowrap; }
 
 /* Touch targets: the small pills and icon buttons keep their look but get a 44px area to tap (an invisible, centred extension) */
-.session .histbtn, .sortbtn, .chip, .sesshist, .sportchip, #calToggle, .linkbtn, #sessCalPrev, #sessCalNext, .histtabs button,
+.session .histbtn, .sortbtn, .selbtn, .chip, .sesshist, .sportchip, #calToggle, .linkbtn, #sessCalPrev, #sessCalNext, .histtabs button,
 .hist .info, .hist .view, .hist .del, button.showbtn, .tagfilter, .pmedit, .pmdel, .panelqr, #btnQr, .pastbanner button, .supcoming { position: relative; }
-.session .histbtn::after, .sortbtn::after, .chip::after, .sesshist::after, .sportchip::after, #calToggle::after, .linkbtn::after, #sessCalPrev::after, #sessCalNext::after,
+.session .histbtn::after, .sortbtn::after, .selbtn::after, .chip::after, .sesshist::after, .sportchip::after, #calToggle::after, .linkbtn::after, #sessCalPrev::after, #sessCalNext::after,
 .histtabs button::after, .hist .info::after, .hist .view::after, .hist .del::after, button.showbtn::after, .tagfilter::after, .pmedit::after, .pmdel::after, .panelqr::after,
 #btnQr::after, .pastbanner button::after, .supcoming::after, .dnav::after {
   content: ''; position: absolute; left: 50%; top: 50%; right: auto; bottom: auto; transform: translate(-50%, -50%); width: 44px; min-width: calc(100% + 8px); height: 44px; margin: 0;

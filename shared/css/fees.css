@@ -561,5 +561,13 @@ body:not(.readonly) .logobadge { display: inline-flex; }
 .sortmenu button.on { background: var(--field); }
 .sortmenu button.on b { visibility: visible; }
 /* Sort by sits at the right edge, its menu opens leftwards from it */
-.sortrow { justify-content: flex-end; }
+.sortrow { justify-content: space-between; align-items: center; }
+.sortrow .sortwrap { margin-left: auto; }
+
+/* Select mode: the Select button beside Sort by, and the shortcut chips that replace the filter chips while selecting */
+.selbtn { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; font-size: 12px; border-radius: 99px; background: var(--card); color: var(--green-text); border: 1px solid var(--line); }
+.selbtn[hidden] { display: none; }
+.selbtn svg { width: 14px; height: 14px; flex: none; }
+.chip.done { margin-left: auto; color: var(--green-text); border-color: var(--green-text); }
+#bulkBar .info b { font-weight: 500; }
 .sortmenu { left: auto; right: 0; }

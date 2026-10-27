@@ -56,7 +56,8 @@
     FC.sortRow = document.createElement('div');
     FC.sortRow.className = 'sortrow';
     FC.sortRow.hidden = true;
-    FC.sortRow.innerHTML = '<div class="sortwrap"><button type="button" class="sortbtn" aria-haspopup="true" aria-expanded="false">'
+    FC.sortRow.innerHTML = '<button type="button" class="selbtn" hidden><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2.5" y="2.5" width="11" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M5.5 8.2l1.8 1.8 3.2-3.6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Select</button>'
+      + '<div class="sortwrap"><button type="button" class="sortbtn" aria-haspopup="true" aria-expanded="false">'
       + '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 3v10M5 13l-2.2-2.2M5 13l2.2-2.2M11 13V3M11 3L8.8 5.2M11 3l2.2 2.2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'
       + '<span class="sortlabel"></span>'
       + '<svg class="sortchev" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>'
