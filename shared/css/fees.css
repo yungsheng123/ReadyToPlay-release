@@ -344,16 +344,8 @@ body.guest, body[data-guest] {
 .p.tile .n .sub { order: 2; }
 .p.tile .acts { margin-left: auto; }
 
-/* Edit mode keeps every box the size it has outside edit mode: the pencil sits on the corner of the avatar (so it takes no room in the
-   row and the name wraps exactly as before), and ticking is done by tapping the box, which turns the avatar into a tick. The tick
-   button stays in the page for keyboards and screen readers, but is not drawn. */
-#grid.editing .p.tile { position: relative; }
-#grid.editing .p.tile .acts { position: absolute; left: 26px; bottom: 4px; margin: 0; gap: 0; }
-#grid.editing .p.tile .ic.chk { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); border: 0; padding: 0; margin: -1px; }
-#grid.editing .p.tile .av { position: relative; box-shadow: inset 0 0 0 2px var(--line); }
-#grid.editing .p.tile.picked .av { background: var(--accent); color: transparent; box-shadow: none; }
-#grid.editing .p.tile.picked .av::after { content: '\2713'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-                                          color: var(--accent-text); font-size: 17px; font-weight: 500; }
+/* Select mode keeps the avatar grid as it is: a ticked player gets a green ring and a tick on the avatar's top right corner (the paid tick stays at the
+   bottom right). The rules are with the avatar grid below. */
 
 
 .pagemenu { display: none !important; }
@@ -520,8 +512,11 @@ body:not(.readonly) .logobadge { display: inline-flex; }
 .p.tile.avc.guestp .av { background: var(--field); color: var(--muted); }
 .p.tile.avc.paid .av::after { content: '\2713'; position: absolute; right: -5px; bottom: -5px; width: 17px; height: 17px; border-radius: 50%; display: flex; align-items: center;
                               justify-content: center; font-size: 11px; font-weight: 700; line-height: 1; background: var(--paid-chip-text); color: var(--paid-bg); box-shadow: 0 0 0 1.5px var(--card); }
-.p.tile.avc .av .gmark { position: absolute; left: -6px; top: -6px; margin: 0; padding: 0; min-width: 0; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center;
-                          font-size: 13px; border-radius: 50%; background: var(--card); box-shadow: 0 0 0 1px var(--line); }
+.avimg { display: block; width: 100%; height: 100%; border-radius: 50%; }
+.p.tile.avc.picked .av { box-shadow: 0 0 0 3px var(--accent); }
+.p.tile.avc.picked .av::before { content: '\2713'; position: absolute; right: -6px; top: -6px; z-index: 1; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+                                 font-size: 12px; font-weight: 700; line-height: 1; background: var(--accent); color: var(--accent-text); box-shadow: 0 0 0 1.5px var(--card); }
+.p.tile.avc.picked { background: var(--field); box-shadow: none; }
 .p.tile.avc .n { flex: none; width: 100%; align-items: center; }
 .p.tile.avc .n .nm { width: 100%; font-size: 12px; font-weight: 500; line-height: 1.25; text-align: center; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .p.tile.avc .n .st, .p.tile.avc .n .sub { display: none; }

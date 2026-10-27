@@ -310,16 +310,15 @@
         sub.textContent = players.length
           ? players.length + (players.length === 1 ? ' player' : ' players') + ' came' + (FA.guest() ? '' : ', ' + paid + ' paid')
           : 'No players were added for this day.';
-        // The same look as the current session's list: a round avatar (a ring and a tick for paid, a red ring for unpaid; neutral for a guest),
-        // the gender sign on its corner and the name under it.
+        // The same look as the current session's list: a round gender avatar (a ring and a tick for paid, a red ring for unpaid; neutral for a guest)
+        // and the name under it.
         players.forEach(function (p) {
           var cell = document.createElement('div');
           cell.className = 'p tile avc ' + (FA.guest() ? 'guestp' : p.paid ? 'paid' : 'unpaid');
           var av = document.createElement('span');
           av.className = 'av';
           av.setAttribute('aria-hidden', 'true');
-          av.textContent = FA.initialsOf(p.name) || '?';
-          av.appendChild(FA.genderMark(p.gender));
+          av.appendChild(FeesCore.avatar(p.gender));
           var n = document.createElement('span');
           n.className = 'n';
           var nm = document.createElement('span');

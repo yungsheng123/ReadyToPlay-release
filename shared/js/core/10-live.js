@@ -141,6 +141,7 @@
 
   window.FeesCore = {
     sportIcon: sportIcon,
+    avatar: FC.avatarFor,   // a gender avatar: FeesCore.avatar('F') or ('M'), an <svg> to put in a round .av box
     code: FC.code,
     start: start,
     applyInit: FC.applyInit,

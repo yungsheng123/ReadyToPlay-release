@@ -4,6 +4,7 @@
   var FC = window.FeesCoreParts = window.FeesCoreParts || {};
   // What other files use from this one:
   FC.initialsOf = initialsOf;
+  FC.avatarFor = avatarFor;
   FC.markNav = markNav;
   FC.renderNav = renderNav;
   FC.showViewBanner = showViewBanner;
@@ -28,8 +29,29 @@
     return words.slice(0, 2).map(firstLetter).join('');
   }
 
-  var switchTo = null;
-  var switchEl = document.createElement('div');
+  // ---- Player avatars: a round head-and-shoulders picture by gender (blue for male, pink for female). A player with no gender saved is male, as
+  // everywhere else. The two pictures live once in the page (a hidden sprite); every avatar is a small <svg><use> that points at one.
+  document.body.insertAdjacentHTML('afterbegin', '<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>'
+    + '<symbol id="rtp-av-m" viewBox="0 0 64 64"><circle cx="32" cy="32" r="32" fill="#1e3a8a"/><path d="M12 64c2-13 11-19 20-19s18 6 20 19z" fill="#93c5fd"/>'
+    + '<circle cx="32" cy="29" r="12" fill="#dbeafe"/><path d="M20 27c0-8 5-12 12-12s12 4 12 12c-2-3-6-4-12-4s-10 1-12 4z" fill="#1e3a8a"/></symbol>'
+    + '<symbol id="rtp-av-f" viewBox="0 0 64 64"><circle cx="32" cy="32" r="32" fill="#9d174d"/><path d="M12 64c2-13 11-19 20-19s18 6 20 19z" fill="#f9a8d4"/>'
+    + '<path d="M19 30c-2-12 5-19 13-19s15 7 13 19c0 6 2 9 3 11-5 0-6-2-7-5H23c-1 3-2 5-7 5 1-2 3-5 3-11z" fill="#fce7f3"/><circle cx="32" cy="29" r="11" fill="#fdf2f8"/>'
+    + '<path d="M21 26c3-7 8-9 11-9s8 2 11 9c-3-3-7-4-11-4s-8 1-11 4z" fill="#fce7f3"/><circle cx="46" cy="22" r="4" fill="#fce7f3"/></symbol>'
+    + '</defs></svg>');
+
+  function avatarFor(gender) {
+    var ns = 'http://www.w3.org/2000/svg';
+    var svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('class', 'avimg');
+    svg.setAttribute('viewBox', '0 0 64 64');
+    svg.setAttribute('aria-hidden', 'true');
+    var use = document.createElementNS(ns, 'use');
+    use.setAttribute('href', gender === 'F' ? '#rtp-av-f' : '#rtp-av-m');
+    svg.appendChild(use);
+    return svg;
+  }
+
+  var switchTo = null;  var switchEl = document.createElement('div');
   switchEl.id = 'switchOverlay';
   switchEl.innerHTML = '<div id="switchDialog" role="dialog" aria-modal="true" aria-labelledby="switchTitle">'
     + '<p id="switchTitle"></p><p id="switchSub"></p>'

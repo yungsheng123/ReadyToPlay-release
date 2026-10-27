@@ -83,19 +83,19 @@
   function render() {
     if (!FC.people.length) FC.editing = false;
     FC.grid.classList.toggle('editing', FC.editing);
-    FC.grid.classList.toggle('avgrid', !!FC.cfg.tiles && !FC.editing);   // players as an avatar grid, four to a row
+    FC.grid.classList.toggle('avgrid', !!FC.cfg.tiles);   // players as an avatar grid, four to a row (also in select mode: the tiles stay as they are)
     var btnEdit = document.getElementById('btnEdit');   // the old Edit button is gone from the pages: a player is edited from their own popup
     if (btnEdit) { btnEdit.hidden = !FC.people.length || FC.readOnly; btnEdit.textContent = FC.editing ? 'Done' : 'Edit'; }
     FC.grid.textContent = '';
     var tiles = !!FC.cfg.tiles;
     if (!FC.people.length) FC.filter = 'all';
-    // Tile pages can narrow the list to the unpaid, the paid, the female or the male players (never while editing).
-    var shown = (!tiles || FC.editing || FC.filter === 'all') ? FC.people : FC.people.filter(function (p) {
+    // Tile pages can narrow the list to the unpaid, the paid, the female or the male players (not while selecting: the chips are the select shortcuts then).
+    var shown = (!tiles || FC.filter === 'all') ? FC.people : FC.people.filter(function (p) {
       if (FC.filter === 'paid') return !!p.paid;
       if (FC.filter === 'unpaid') return !p.paid;
       return (p.gender === 'F' ? 'female' : 'male') === FC.filter;   // (a player saved before gender existed is male)
     });
-    if (tiles && !FC.editing && FC.sortMode !== 'default') {
+    if (tiles && FC.sortMode !== 'default') {
       var order = {};
       FC.people.forEach(function (p, i) { order[p.id] = i; });
       shown = shown.slice().sort(function (a, b) {
@@ -109,29 +109,11 @@
       var n = document.createElement('span');
       n.className = 'n';
       if (tiles) {
-        // Tile: a round avatar with the initials, then the name, a status line and the tags.
+        // Tile: a round gender avatar, then the name (a status line and the tags are in the popup).
         var nameEl = document.createElement('span');
         nameEl.className = 'nm';
-        // The gender mark: a blue male sign or a red female sign. In the avatar grid it sits on the corner of the avatar; in edit mode it
-        // follows the name (the last word and the sign stay together).
-        var mark = document.createElement('i');
-        mark.className = 'gmark ' + (p.gender === 'F' ? 'f' : 'm');
-        mark.textContent = p.gender === 'F' ? '\u2640\ufe0e' : '\u2642\ufe0e';
-        mark.setAttribute('role', 'img');
-        mark.setAttribute('aria-label', p.gender === 'F' ? 'Female' : 'Male');
-        if (FC.editing) {
-          var cut = p.name.lastIndexOf(' ');
-          var lastWord = cut === -1 ? p.name : p.name.slice(cut + 1);
-          var holder = nameEl;
-          if (lastWord.length <= 12) {
-            if (cut !== -1) nameEl.appendChild(document.createTextNode(p.name.slice(0, cut + 1)));
-            holder = document.createElement('span');
-            holder.className = 'last';
-            holder.textContent = lastWord;
-            nameEl.appendChild(holder);
-          } else nameEl.textContent = p.name;
-          holder.appendChild(mark);
-        } else { nameEl.textContent = p.name; nameEl.title = p.name; }   // (a long name is cut with "..." in the avatar grid; the title has all of it)
+        nameEl.textContent = p.name;
+        nameEl.title = p.name;   // (a long name is cut with "..." in the avatar grid; the title has all of it)
         n.appendChild(nameEl);
         if (!FC.viewOnly) {
           var st = document.createElement('small');
@@ -147,8 +129,7 @@
         avatar = document.createElement('span');
         avatar.className = 'av';
         avatar.setAttribute('aria-hidden', 'true');
-        avatar.textContent = FC.initialsOf(p.name) || '?';
-        if (!FC.editing) avatar.appendChild(mark);
+        avatar.appendChild(FC.avatarFor(p.gender));
       }
       // A page can show a small second line under the name (pickleball: the player's unique link).
       var subText = FC.cfg.subtitle ? FC.cfg.subtitle(p) : '';
@@ -166,36 +147,17 @@
         n.appendChild(by);
       }
 
-      if (FC.editing) {
-        var row = document.createElement('div');
-        row.className = 'p ' + state + (tiles ? ' tile' : '') + (FC.cfg.bulkEdit && FC.selected[p.id] ? ' picked' : '');
-        var acts = document.createElement('div');
-        acts.className = 'acts';
-        if (FC.cfg.bulkEdit) {
-          // Select mode: tick players (no pencil, no trash: a player is edited from their own popup), then use the bar at the bottom.
-          row.setAttribute('data-pid', p.id);
-          var tick = FC.iconButton('select', (FC.selected[p.id] ? 'Untick ' : 'Tick ') + p.name, p.id, FC.selected[p.id] ? FC.TICK : '');
-          tick.classList.add('chk');
-          tick.setAttribute('aria-pressed', FC.selected[p.id] ? 'true' : 'false');
-          acts.appendChild(tick);
-        } else {
-          acts.appendChild(FC.iconButton('rename', 'Rename ' + p.name, p.id, FC.PENCIL));
-          acts.appendChild(FC.iconButton('remove', 'Remove ' + p.name, p.id, FC.TRASH));
-        }
-        if (avatar) row.appendChild(avatar);
-        row.appendChild(n);
-        row.appendChild(acts);
-        FC.grid.appendChild(row);
-        return;
-      }
-
       // On a page that is only being looked at, the boxes are plain (not buttons).
       var tappable = !FC.readOnly || FC.admin;
       var b = document.createElement(tappable ? 'button' : 'div');
-      b.className = 'p ' + state + (tiles ? ' tile avc' : '');   // avc: a cell of the avatar grid (a dragged copy keeps the class)
+      var selecting = FC.editing && !!FC.cfg.bulkEdit;   // select mode: a tap ticks the player (a green ring and a tick on the avatar)
+      var picked = selecting && !!FC.selected[p.id];
+      b.className = 'p ' + state + (tiles ? ' tile avc' : '') + (picked ? ' picked' : '');   // avc: a cell of the avatar grid (a dragged copy keeps the class)
       if (tappable) {
         b.type = 'button';
         b.setAttribute('data-id', p.id);
+        b.setAttribute('data-pid', p.id);
+        if (selecting) b.setAttribute('aria-pressed', picked ? 'true' : 'false');
       }
       var s = document.createElement('span');
       s.className = 's';

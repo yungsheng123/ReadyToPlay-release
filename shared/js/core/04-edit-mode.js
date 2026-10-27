@@ -22,6 +22,7 @@
   function startSelect() {
     if (!FC.canSelect() || !FC.people.length) return;
     FC.editing = true;
+    FC.filter = 'all';   // (the filter chips are replaced by the select shortcuts meanwhile)
     FC.selected = {};
     FC.render();
   }
