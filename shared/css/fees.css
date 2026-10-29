@@ -329,7 +329,12 @@ body.guest, body[data-guest] {
 .ring .rn { fill: var(--hero-text); font-size: 16px; font-weight: 500; }
 .ring .rs { fill: var(--hero-muted); font-size: 11px; }
 
-.chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; }
+.chips { position: relative; display: flex; flex-wrap: nowrap; gap: 6px; padding: 6px 0; margin: -6px 0 4px; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; }
+.chips::-webkit-scrollbar { display: none; }
+.chips > * { flex: none; white-space: nowrap; }
+.chips.fadeR { -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent); }
+.chips.fadeL { -webkit-mask-image: linear-gradient(90deg, transparent, #000 28px); mask-image: linear-gradient(90deg, transparent, #000 28px); }
+.chips.fadeL.fadeR { -webkit-mask-image: linear-gradient(90deg, transparent, #000 28px, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(90deg, transparent, #000 28px, #000 calc(100% - 28px), transparent); }
 .chips[hidden] { display: none; }
 .chip { padding: 5px 13px; font-size: 13px; border-radius: 99px; background: var(--card); color: var(--text); border: 1px solid var(--line); }
 .chip.on { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }

@@ -100,7 +100,7 @@
     document.addEventListener(name, function () { FC.liveIdle = 0; }, { passive: true });
   });
 
-  // config: { tiles (players as tiles with an avatar and filter chips), onCounts(paid, total), sport, title, onInit(data), onFail(err), onPeopleChange(count, players), subtitle(player), linkOf(player), onLinkChanged(player, link), keepPasteClosed, bulkEdit }. Fetches everything the page needs in one request.
+  // config: { tiles (players as tiles with an avatar and filter chips), onCounts(paid, total), sport, title, onInit(data), onFail(err), onPeopleChange(count, players), subtitle(player), linkOf(player), onLinkChanged(player, link), keepPasteClosed, bulkEdit, tagsOf(player) (the tags of a player: the filter chips offer the tags of the players in the list) }. Fetches everything the page needs in one request.
   function start(config) {
     FC.cfg = config;
     if (FC.cfg.bulkEdit) FC.buildBulkBar();

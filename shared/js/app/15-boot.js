@@ -154,6 +154,11 @@
       if (!known) return FA.owner ? 'Guest' : '';
       return FA.tagsOf(known).join(' \u00b7 ');
     },
+    // The tags of a player of the session (from the known players): the filter chips offer the tags the players of the session have.
+    tagsOf: function (p) {
+      var known = p.playerId ? FA.knownById(p.playerId) : null;
+      return known ? FA.tagsOf(known) : [];
+    },
     // The pencil edits the name and the link together for players that have a link.
     linkOf: function (p) {
       var known = p.playerId ? FA.knownById(p.playerId) : null;

@@ -90,7 +90,10 @@
     var tiles = !!FC.cfg.tiles;
     if (!FC.people.length) FC.filter = 'all';
     // Tile pages can narrow the list to the unpaid, the paid, the female or the male players (not while selecting: the chips are the select shortcuts then).
+    // (A tag filter whose tag nobody in the list has any more, or that a guest has, goes back to All.)
+    if (FC.filter.indexOf('tag:') === 0 && !FC.tagChips().some(function (c) { return 'tag:' + c.key === FC.filter; })) FC.filter = 'all';
     var shown = (!tiles || FC.filter === 'all') ? FC.people : FC.people.filter(function (p) {
+      if (FC.filter.indexOf('tag:') === 0) return FC.hasTagKey(p, FC.filter.slice(4));
       if (FC.filter === 'paid') return !!p.paid;
       if (FC.filter === 'unpaid') return !p.paid;
       return (p.gender === 'F' ? 'female' : 'male') === FC.filter;   // (a player saved before gender existed is male)

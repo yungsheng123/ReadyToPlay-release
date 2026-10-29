@@ -6,6 +6,8 @@
   FC.noteListChanges = noteListChanges;
   FC.renderChips = renderChips;
   FC.canSelect = canSelect;
+  FC.tagChips = tagChips;
+  FC.hasTagKey = hasTagKey;
   FC.peopleChanged = peopleChanged;
   FC.findById = findById;
   FC.closeDlgMenu = closeDlgMenu;
@@ -72,13 +74,51 @@
     AppShell.notify({ kind: kind, title: title, sub: sub });
   }
 
-  // The filter chips above the tiles: All / Unpaid / Paid / Female / Male, each with its count (the last two show the gender symbol).
   // Who may tick players and mark them paid or unpaid in one go ("Select"): the Master Admin and the Sub Admin (the Sub Admin has no Remove), on
   // pages that have it (cfg.bulkEdit), never a guest.
   function canSelect() { return !!FC.cfg.bulkEdit && !FC.viewOnly && (!FC.readOnly || FC.admin); }
 
+  // The tags of the players in this session, for the filter chips (case does not matter: "Regular" and "regular" are one chip): the tag on the most
+  // players first, then by name. Only for a page that can look the tags up (cfg.tagsOf(player)), and never for a guest: the tags are the host's own
+  // grouping and a guest is not shown them in the list either.
+  function personTags(p) { return FC.cfg.tagsOf ? (FC.cfg.tagsOf(p) || []) : []; }
+  function hasTagKey(p, key) { return personTags(p).some(function (t) { return String(t).toLowerCase() === key; }); }
+  function tagChips() {
+    if (FC.viewOnly || !FC.cfg.tagsOf) return [];
+    var by = {};
+    FC.people.forEach(function (p) {
+      personTags(p).forEach(function (t) {
+        var k = String(t).toLowerCase();
+        if (!by[k]) by[k] = { key: k, label: t, count: 0 };
+        by[k].count++;
+      });
+    });
+    return Object.keys(by).map(function (k) { return by[k]; }).sort(function (a, b) { return b.count - a.count || a.label.localeCompare(b.label); });
+  }
+
+  // The filter chips above the tiles: All / Unpaid / Paid / Female / Male, each with its count (the last two show the gender symbol), then one chip
+  // for each tag the players of this session have. One row, swiped sideways when it is longer than the screen (a soft fade shows where more is).
+  function fitChips() {
+    var el = FC.chipsEl;
+    if (!el || el.hidden) return;
+    var max = el.scrollWidth - el.clientWidth;
+    el.classList.toggle('fadeL', el.scrollLeft > 2);
+    el.classList.toggle('fadeR', max > 2 && el.scrollLeft < max - 2);
+  }
+  // The chip that is on is brought into view in its row (the row is moved, not the page).
+  function revealActiveChip() {
+    var el = FC.chipsEl, on = el && el.querySelector('.chip.on');
+    if (!on) return;
+    if (on.offsetLeft < el.scrollLeft || on.offsetLeft + on.offsetWidth > el.scrollLeft + el.clientWidth) el.scrollLeft = on.offsetLeft - (el.clientWidth - on.offsetWidth) / 2;
+  }
+  if (FC.chipsEl) {
+    FC.chipsEl.addEventListener('scroll', fitChips, { passive: true });
+    if (window.ResizeObserver) new ResizeObserver(fitChips).observe(FC.chipsEl); else window.addEventListener('resize', fitChips);
+  }
+
   function renderChips(paidCount) {
     if (!FC.chipsEl) return;
+    var keepLeft = FC.chipsEl.scrollLeft;
     var selecting = FC.editing && canSelect();
     FC.chipsEl.hidden = !FC.cfg.tiles || !FC.people.length || (FC.editing && !selecting);   // (a guest gets All, female and male: how many are coming, not who has paid)
     if (FC.sortRow) {
@@ -100,6 +140,8 @@
         sb.textContent = c[1];
         FC.chipsEl.appendChild(sb);
       });
+      FC.chipsEl.scrollLeft = keepLeft;
+      fitChips();
       return;
     }
     var females = FC.people.filter(function (p) { return p.gender === 'F'; }).length;
@@ -115,6 +157,17 @@
       if (c[3]) b.setAttribute('aria-label', c[3] + ' ' + c[2]);
       FC.chipsEl.appendChild(b);
     });
+    tagChips().forEach(function (c) {
+      var tb = document.createElement('button');
+      tb.type = 'button';
+      tb.className = 'chip tag' + (FC.filter === 'tag:' + c.key ? ' on' : '');
+      tb.setAttribute('data-f', 'tag:' + c.key);
+      tb.textContent = c.label + ' ' + c.count;
+      tb.setAttribute('aria-label', 'Tag ' + c.label + ', ' + c.count);
+      FC.chipsEl.appendChild(tb);
+    });
+    FC.chipsEl.scrollLeft = keepLeft;
+    fitChips();
   }
   if (FC.chipsEl) FC.chipsEl.addEventListener('click', function (e) {
     var s = e.target.closest('button[data-s]');
@@ -124,6 +177,7 @@
     var picked = b.getAttribute('data-f');
     FC.filter = picked === FC.filter ? 'all' : picked;   // the chip that is already on, tapped again, goes back to All
     FC.render();
+    revealActiveChip();
   });
 
   if (FC.sortRow) {
