@@ -8,6 +8,7 @@
 
   // ---- New session --------------------------------------------------------------------------------
   var sessionOverlay = FA.el('sessionOverlay');
+  if (window.SwipeRow) SwipeRow.attach(FA.el('dayStrip'), { arrows: false });   // (it has its own earlier/later buttons)
   var sessionSub = FA.el('sessionSub');
   var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   var DAY_LETTERS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];

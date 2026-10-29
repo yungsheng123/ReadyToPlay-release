@@ -24,14 +24,13 @@
     FC.editing = true;
     FC.filter = 'all';   // (the filter chips are replaced by the select shortcuts meanwhile)
     FC.selected = {};
-    if (FC.chipsEl) FC.chipsEl.scrollLeft = 0;
+    FC.tagOpen = false;
     FC.render();
   }
 
   function endSelect() {
     FC.editing = false;
     FC.selected = {};
-    if (FC.chipsEl) FC.chipsEl.scrollLeft = 0;   // (the filter chips come back from their start)
     FC.render();
   }
 

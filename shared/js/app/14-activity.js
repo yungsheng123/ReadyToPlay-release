@@ -6,6 +6,7 @@
   var list = document.getElementById('actList');
   var sub = document.getElementById('actSub');
   var chips = document.getElementById('actChips');
+  if (window.SwipeRow) SwipeRow.attach(chips);
   var GROUPS = { session: 'session', player: 'player', paid: 'paid', money: 'money', access: 'security', security: 'security' };
   var entries = [];
   var filter = 'all';

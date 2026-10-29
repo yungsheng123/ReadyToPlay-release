@@ -9,6 +9,7 @@
   FA.picker = { open: open, home: home, render: render, ids: ids };
 
   var root = FA.el('srcPicker');
+  if (window.SwipeRow) { SwipeRow.attach(FA.el('srcSessions')); SwipeRow.attach(FA.el('srcTags')); }   // (the From and Tags rows: a mouse can move them too)
   var homeBox = root ? root.parentNode : null;   // where the picker lives when nobody has borrowed it
   var ticked = {};             // ticked known players, by id
   var filter = '';             // what was typed in the search box

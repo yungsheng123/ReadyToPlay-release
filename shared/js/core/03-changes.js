@@ -96,29 +96,22 @@
     return Object.keys(by).map(function (k) { return by[k]; }).sort(function (a, b) { return b.count - a.count || a.label.localeCompare(b.label); });
   }
 
-  // The filter chips above the tiles: All / Unpaid / Paid / Female / Male, each with its count (the last two show the gender symbol), then one chip
-  // for each tag the players of this session have. One row, swiped sideways when it is longer than the screen (a soft fade shows where more is).
-  function fitChips() {
-    var el = FC.chipsEl;
-    if (!el || el.hidden) return;
-    var max = el.scrollWidth - el.clientWidth;
-    el.classList.toggle('fadeL', el.scrollLeft > 2);
-    el.classList.toggle('fadeR', max > 2 && el.scrollLeft < max - 2);
-  }
-  // The chip that is on is brought into view in its row (the row is moved, not the page).
-  function revealActiveChip() {
-    var el = FC.chipsEl, on = el && el.querySelector('.chip.on');
-    if (!on) return;
-    if (on.offsetLeft < el.scrollLeft || on.offsetLeft + on.offsetWidth > el.scrollLeft + el.clientWidth) el.scrollLeft = on.offsetLeft - (el.clientWidth - on.offsetWidth) / 2;
-  }
+  // The filter chips above the tiles: All / Unpaid / Paid / Female / Male, each with its count (the last two show the gender symbol), then one "Tags"
+  // chip when the players of this session have tags. It opens a panel under the row with one chip for each tag (so the row stays short however many
+  // tags there are); picking a tag shows only those players and closes the panel, and the "Tags" chip then says which tag is on.
+  var CHEV = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  FC.tagOpen = false;   // the tag panel is open
+  FC.tagPanel = null;
   if (FC.chipsEl) {
-    FC.chipsEl.addEventListener('scroll', fitChips, { passive: true });
-    if (window.ResizeObserver) new ResizeObserver(fitChips).observe(FC.chipsEl); else window.addEventListener('resize', fitChips);
+    FC.tagPanel = document.createElement('div');
+    FC.tagPanel.id = 'tagChips';
+    FC.tagPanel.className = 'chips tagpanel';
+    FC.tagPanel.hidden = true;
+    FC.chipsEl.parentNode.insertBefore(FC.tagPanel, FC.chipsEl.nextSibling);
   }
 
   function renderChips(paidCount) {
     if (!FC.chipsEl) return;
-    var keepLeft = FC.chipsEl.scrollLeft;
     var selecting = FC.editing && canSelect();
     FC.chipsEl.hidden = !FC.cfg.tiles || !FC.people.length || (FC.editing && !selecting);   // (a guest gets All, female and male: how many are coming, not who has paid)
     if (FC.sortRow) {
@@ -127,6 +120,9 @@
       if (selBtn) selBtn.hidden = !canSelect();
       FC.paintSort();
     }
+    var tags = FC.chipsEl.hidden || selecting ? [] : tagChips();
+    if (!tags.length) FC.tagOpen = false;
+    if (FC.tagPanel) { FC.tagPanel.hidden = !FC.tagOpen; FC.tagPanel.textContent = ''; }
     if (FC.chipsEl.hidden) return;
     FC.chipsEl.textContent = '';
     if (selecting) {
@@ -140,8 +136,6 @@
         sb.textContent = c[1];
         FC.chipsEl.appendChild(sb);
       });
-      FC.chipsEl.scrollLeft = keepLeft;
-      fitChips();
       return;
     }
     var females = FC.people.filter(function (p) { return p.gender === 'F'; }).length;
@@ -157,29 +151,47 @@
       if (c[3]) b.setAttribute('aria-label', c[3] + ' ' + c[2]);
       FC.chipsEl.appendChild(b);
     });
-    tagChips().forEach(function (c) {
+    if (!tags.length) return;
+    var active = null;
+    tags.forEach(function (c) { if (FC.filter === 'tag:' + c.key) active = c; });
+    var toggle = document.createElement('button');
+    toggle.type = 'button';
+    toggle.className = 'chip tagtoggle' + (active ? ' on' : '');
+    toggle.setAttribute('data-t', 'toggle');
+    toggle.setAttribute('aria-expanded', FC.tagOpen ? 'true' : 'false');
+    toggle.setAttribute('aria-controls', 'tagChips');
+    toggle.appendChild(document.createTextNode(active ? active.label + ' ' + active.count : 'Tags'));
+    toggle.insertAdjacentHTML('beforeend', CHEV);
+    FC.chipsEl.appendChild(toggle);
+    tags.forEach(function (c) {
       var tb = document.createElement('button');
       tb.type = 'button';
       tb.className = 'chip tag' + (FC.filter === 'tag:' + c.key ? ' on' : '');
       tb.setAttribute('data-f', 'tag:' + c.key);
       tb.textContent = c.label + ' ' + c.count;
       tb.setAttribute('aria-label', 'Tag ' + c.label + ', ' + c.count);
-      FC.chipsEl.appendChild(tb);
+      FC.tagPanel.appendChild(tb);
     });
-    FC.chipsEl.scrollLeft = keepLeft;
-    fitChips();
   }
   if (FC.chipsEl) FC.chipsEl.addEventListener('click', function (e) {
     var s = e.target.closest('button[data-s]');
     if (s) { FC.selectChip(s.getAttribute('data-s')); return; }   // (04-edit-mode.js)
+    if (e.target.closest('button[data-t]')) { FC.tagOpen = !FC.tagOpen; FC.render(); return; }
     var b = e.target.closest('button[data-f]');
     if (!b) return;
     var picked = b.getAttribute('data-f');
     FC.filter = picked === FC.filter ? 'all' : picked;   // the chip that is already on, tapped again, goes back to All
+    FC.tagOpen = false;
     FC.render();
-    revealActiveChip();
   });
-
+  if (FC.tagPanel) FC.tagPanel.addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-f]');
+    if (!b) return;
+    var picked = b.getAttribute('data-f');
+    FC.filter = picked === FC.filter ? 'all' : picked;
+    FC.tagOpen = false;
+    FC.render();
+  });
   if (FC.sortRow) {
     FC.sortRow.querySelector('.sortbtn').addEventListener('click', function (e) {
       e.stopPropagation();

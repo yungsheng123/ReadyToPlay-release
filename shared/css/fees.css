@@ -329,13 +329,26 @@ body.guest, body[data-guest] {
 .ring .rn { fill: var(--hero-text); font-size: 16px; font-weight: 500; }
 .ring .rs { fill: var(--hero-muted); font-size: 11px; }
 
-.chips { position: relative; display: flex; flex-wrap: nowrap; gap: 6px; padding: 6px 0; margin: -6px 0 4px; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; }
-.chips::-webkit-scrollbar { display: none; }
-.chips > * { flex: none; white-space: nowrap; }
-.chips.fadeR { -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent); }
-.chips.fadeL { -webkit-mask-image: linear-gradient(90deg, transparent, #000 28px); mask-image: linear-gradient(90deg, transparent, #000 28px); }
-.chips.fadeL.fadeR { -webkit-mask-image: linear-gradient(90deg, transparent, #000 28px, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(90deg, transparent, #000 28px, #000 calc(100% - 28px), transparent); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; }
 .chips[hidden] { display: none; }
+/* The "Tags" chip and the panel it opens: one chip for each tag of the players in the list */
+.chip.tagtoggle svg { width: 12px; height: 12px; margin-left: 5px; vertical-align: -1px; transition: transform .15s; }
+.chip.tagtoggle[aria-expanded="true"] svg { transform: rotate(180deg); }
+.chips.tagpanel { margin: -4px 0 10px; padding: 8px; background: var(--field); border: 1px solid var(--line); border-radius: 12px; }
+.chips.tagpanel[hidden] { display: none; }
+
+/* A row swiped sideways that a mouse can move too (see shared/js/swipe-row.js): the arrow buttons at its ends, only on a device with a mouse */
+.swipewrap { position: relative; min-width: 0; }
+.swipenav { display: none; position: absolute; top: 50%; transform: translateY(-50%); z-index: 2; width: 26px; height: 26px; padding: 0; border-radius: 50%;
+            border: 1px solid var(--line); background: var(--card); color: var(--text); align-items: center; justify-content: center; box-shadow: 0 1px 4px rgba(0, 0, 0, .15); }
+.swipenav svg { width: 13px; height: 13px; }
+.swipenav.prev { left: 2px; }
+.swipenav.next { right: 2px; }
+@media (hover: hover) and (pointer: fine) { .swipenav { display: inline-flex; } }
+.swipenav[hidden] { display: none; }
+[class*="tagrow"].dragging, #actChips.dragging { cursor: grabbing; user-select: none; }
+.srcfrom .swipewrap { flex: 1; min-width: 0; }
+#actDialog > .swipewrap { flex: none; }
 .chip { padding: 5px 13px; font-size: 13px; border-radius: 99px; background: var(--card); color: var(--text); border: 1px solid var(--line); }
 .chip.on { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
 
