@@ -24,6 +24,8 @@ window.SessionCalendar = (function () {
   var today, todayIso;
   var view;                // first day of the month on screen
   var sessions = [];
+  var holidays = {};       // year -> { 'yyyy-MM-dd': name }: the national public holidays, loaded a year at a time (the server keeps them: see HolidayService)
+  var holidayAsked = {};   // years already asked for (once each; a failure just leaves the year without holidays)
   var opened = {};         // phone view: the sessions whose remark is showing (by id)
 
   // On a phone each session is a small box with just its title; touching it shows its remark (and an Edit button).
@@ -33,6 +35,19 @@ window.SessionCalendar = (function () {
   var editing = null;      // the session being edited, or null when adding
   var saving = false;
   var overlay = null;
+
+  // The national public holidays of a year, asked for once; the month is drawn again when they arrive (a slow or failed call changes nothing).
+  function ensureHolidays(year) {
+    if (holidayAsked[year]) return;
+    holidayAsked[year] = true;
+    api('GET', '/holidays?year=' + year).then(function (data) {
+      var byDay = {};
+      ((data && data.holidays) || []).forEach(function (h) { if (h.date && h.name) byDay[h.date] = byDay[h.date] ? byDay[h.date] + ' / ' + h.name : h.name; });
+      holidays[year] = byDay;
+      if (Object.keys(byDay).length && el('calHolCredit')) el('calHolCredit').hidden = false;   // (the free plan asks for a credit line)
+      if (view && view.getFullYear() === year && built) render();
+    }).catch(function () { holidayAsked[year] = false; });   // (asked for again the next time the month is shown)
+  }
 
   function setToday() {
     today = new Date();
@@ -46,7 +61,7 @@ window.SessionCalendar = (function () {
   }
 
   function api(method, path, body) {
-    return fetch((window.APP_ROOT != null ? window.APP_ROOT : '../') + 'api/calendar' + path + '?u=' + encodeURIComponent(code) + (window.FeesCore ? FeesCore.tokenParam() : ''), {
+    return fetch((window.APP_ROOT != null ? window.APP_ROOT : '../') + 'api/calendar' + path + (path.indexOf('?') === -1 ? '?' : '&') + 'u=' + encodeURIComponent(code) + (window.FeesCore ? FeesCore.tokenParam() : ''), {
       method: method,
       headers: { 'Content-Type': 'application/json' },
       body: body === undefined ? undefined : JSON.stringify(body)
@@ -88,6 +103,7 @@ window.SessionCalendar = (function () {
     el('calYear').value = String(view.getFullYear());
 
     var y = view.getFullYear(), m = view.getMonth();
+    ensureHolidays(y);   // (a year is asked for once; the month is drawn again when the holidays arrive)
     var lead = new Date(y, m, 1).getDay();
     var days = new Date(y, m + 1, 0).getDate();
     var grid = el('calGrid');
@@ -113,6 +129,8 @@ window.SessionCalendar = (function () {
       var iso = isoOf(y, m, d);
       var c = cell((iso === todayIso ? 'today' : '') + (iso < todayIso ? ' past' : ''));
       c.setAttribute('data-d', iso);
+      var holiday = (holidays[y] || {})[iso];
+      if (holiday) c.classList.add('holiday');
       // The day label (number, and the weekday name that only a phone shows) and, beside or below it, the sessions.
       var label = document.createElement('div');
       label.className = 'daylab';
@@ -128,6 +146,14 @@ window.SessionCalendar = (function () {
       var pills = document.createElement('div');
       pills.className = 'pills';
       c.appendChild(pills);
+      if (holiday) {
+        // A national public holiday: its name, above the sessions of the day (not draggable, not a session).
+        var tag = document.createElement('div');
+        tag.className = 'holtag';
+        tag.textContent = holiday;
+        tag.title = holiday;
+        pills.appendChild(tag);
+      }
       (byDate[iso] || []).forEach(function (s) {
         // Not a <button>: it holds the Edit button of a phone, and a button can't sit inside a button.
         var pill = document.createElement('div');
@@ -422,7 +448,8 @@ window.SessionCalendar = (function () {
     '</div>' +
     '<div class="caldow" id="calDow"></div>' +
     '<div class="calgrid" id="calGrid"></div>' +
-    '<p class="calnote">Click a day to add a session, or a session to change or delete it. Press and hold a session, then drag it to change its order within its day. A day\u2019s sessions are kept in the order of their start times.</p>';
+    '<p class="calnote">Click a day to add a session, or a session to change or delete it. Press and hold a session, then drag it to change its order within its day. A day\u2019s sessions are kept in the order of their start times.</p>' +
+    '<p class="calnote" id="calHolCredit" hidden>Public holidays: <a href="https://calendarific.com" target="_blank" rel="noopener">Calendarific</a></p>';
 
   var DIALOG_HTML =
     '<div id="csDialog" role="dialog" aria-modal="true" aria-labelledby="csTitle">' +

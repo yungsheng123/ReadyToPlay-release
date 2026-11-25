@@ -27,6 +27,11 @@ main.calmain { max-width: 1100px; }
 .pills { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .calcell .num { height: 22px; line-height: 22px; font-size: 12px; text-align: center; }
 .calcell.today { background: var(--paid-bg); box-shadow: inset 0 0 0 2px var(--accent); }
+/* A national public holiday: the day number in the unpaid red and the holiday's name in a small tag above the day's sessions */
+.calcell.holiday .num { color: var(--unpaid-chip-text); font-weight: 500; }
+.calcell.holiday.today .num { color: var(--accent-text); }
+.holtag { width: 100%; padding: 2px 5px; border-radius: 6px; font-size: 10px; line-height: 1.25; background: var(--unpaid-chip); color: var(--unpaid-chip-text); overflow-wrap: anywhere; cursor: default; }
+@media (max-width: 600px) { .holtag { width: auto; max-width: 100%; padding: 4px 9px; font-size: 12px; } }
 .calcell.today .num { width: 26px; margin: 0 auto; border-radius: 6px; background: var(--accent); color: var(--accent-text); font-weight: 500; }
 .calpill { width: 100%; padding: 3px 5px; border: none; border-radius: 6px; text-align: left; font-size: 11px; line-height: 1.25;
            background: var(--paid-chip); color: var(--paid-chip-text); overflow-wrap: anywhere; }
