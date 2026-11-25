@@ -24,7 +24,7 @@ window.SessionCalendar = (function () {
   var today, todayIso;
   var view;                // first day of the month on screen
   var sessions = [];
-  var holidays = {};       // year -> { 'yyyy-MM-dd': name }: the national public holidays, loaded a year at a time (the server keeps them: see HolidayService)
+  var holidays = {};       // year -> { 'yyyy-MM-dd': [ { name, area, states, tentative } ] }: the public holidays (area is empty for a nationwide one), loaded a year at a time (the server keeps them: see HolidayService)
   var holidayAsked = {};   // years already asked for (once each; a failure just leaves the year without holidays)
   var opened = {};         // phone view: the sessions whose remark is showing (by id)
 
@@ -36,15 +36,15 @@ window.SessionCalendar = (function () {
   var saving = false;
   var overlay = null;
 
-  // The national public holidays of a year, asked for once; the month is drawn again when they arrive (a slow or failed call changes nothing).
+  // The public holidays of a year, asked for once; the month is drawn again when they arrive (a slow or failed call changes nothing).
   function ensureHolidays(year) {
     if (holidayAsked[year]) return;
     holidayAsked[year] = true;
     api('GET', '/holidays?year=' + year).then(function (data) {
       var byDay = {};
-      ((data && data.holidays) || []).forEach(function (h) { if (h.date && h.name) byDay[h.date] = byDay[h.date] ? byDay[h.date] + ' / ' + h.name : h.name; });
+      ((data && data.holidays) || []).forEach(function (h) { if (h.date && h.name) (byDay[h.date] = byDay[h.date] || []).push(h); });
       holidays[year] = byDay;
-      if (Object.keys(byDay).length && el('calHolCredit')) el('calHolCredit').hidden = false;   // (the free plan asks for a credit line)
+      if (Object.keys(byDay).length && el('calHolCredit')) el('calHolCredit').hidden = false;   // (where the holidays come from)
       if (view && view.getFullYear() === year && built) render();
     }).catch(function () { holidayAsked[year] = false; });   // (asked for again the next time the month is shown)
   }
@@ -129,8 +129,9 @@ window.SessionCalendar = (function () {
       var iso = isoOf(y, m, d);
       var c = cell((iso === todayIso ? 'today' : '') + (iso < todayIso ? ' past' : ''));
       c.setAttribute('data-d', iso);
-      var holiday = (holidays[y] || {})[iso];
-      if (holiday) c.classList.add('holiday');
+      var dayHolidays = (holidays[y] || {})[iso] || [];
+      // A nationwide holiday: the day number turns red. A state holiday only gets its tag (most of the group is not off that day).
+      if (dayHolidays.some(function (h) { return !h.area; })) c.classList.add('holiday');
       // The day label (number, and the weekday name that only a phone shows) and, beside or below it, the sessions.
       var label = document.createElement('div');
       label.className = 'daylab';
@@ -146,14 +147,14 @@ window.SessionCalendar = (function () {
       var pills = document.createElement('div');
       pills.className = 'pills';
       c.appendChild(pills);
-      if (holiday) {
-        // A national public holiday: its name, above the sessions of the day (not draggable, not a session).
+      dayHolidays.forEach(function (h) {
+        // A holiday: its name (and, for a state holiday, where it applies), above the sessions of the day (not draggable, not a session).
         var tag = document.createElement('div');
-        tag.className = 'holtag';
-        tag.textContent = holiday;
-        tag.title = holiday;
+        tag.className = 'holtag' + (h.area ? ' regional' : '');
+        tag.textContent = h.name + (h.area ? ' (' + h.area + ')' : '');
+        tag.title = holidayTitle(h);
         pills.appendChild(tag);
-      }
+      });
       (byDate[iso] || []).forEach(function (s) {
         // Not a <button>: it holds the Edit button of a phone, and a button can't sit inside a button.
         var pill = document.createElement('div');
@@ -191,6 +192,32 @@ window.SessionCalendar = (function () {
     }
     var rest = (7 - ((lead + days) % 7)) % 7;
     for (i = 0; i < rest; i++) grid.appendChild(cell('out'));
+    renderHolidayList(y, m, days);
+  }
+
+  // "Thaipusam: Johor, Kedah, ..." (the full list of states, for a tag that can only say "8 states"); "may change" for a date still to be confirmed.
+  function holidayTitle(h) {
+    return h.name + ': ' + (h.states && h.states.length ? h.states.join(', ') : 'all states') + (h.tentative ? ' (date may change)' : '');
+  }
+
+  // Under the calendar, closed: the month's holidays with the states each one applies to.
+  function renderHolidayList(y, m, days) {
+    var box = el('calHolList');
+    if (!box) return;
+    var rows = [];
+    for (var d = 1; d <= days; d++) {
+      var iso = isoOf(y, m, d);
+      ((holidays[y] || {})[iso] || []).forEach(function (h) { rows.push({ d: d, h: h }); });
+    }
+    box.hidden = !rows.length;
+    el('calHolCount').textContent = String(rows.length);
+    var list = el('calHolItems');
+    list.textContent = '';
+    rows.forEach(function (r) {
+      var li = document.createElement('li');
+      li.textContent = r.d + ' ' + MONTHS[m].slice(0, 3) + ' (' + DAYS[new Date(y, m, r.d).getDay()].charAt(0) + DAYS[new Date(y, m, r.d).getDay()].slice(1).toLowerCase() + '): ' + holidayTitle(r.h);
+      list.appendChild(li);
+    });
   }
 
   // "7:00pm" for "19:00".
@@ -449,7 +476,8 @@ window.SessionCalendar = (function () {
     '<div class="caldow" id="calDow"></div>' +
     '<div class="calgrid" id="calGrid"></div>' +
     '<p class="calnote">Click a day to add a session, or a session to change or delete it. Press and hold a session, then drag it to change its order within its day. A day\u2019s sessions are kept in the order of their start times.</p>' +
-    '<p class="calnote" id="calHolCredit" hidden>Public holidays: <a href="https://calendarific.com" target="_blank" rel="noopener">Calendarific</a></p>';
+    '<details class="calhols" id="calHolList" hidden><summary>Public holidays this month (<span id="calHolCount">0</span>)</summary><ul id="calHolItems"></ul></details>' +
+    '<p class="calnote" id="calHolCredit" hidden>Public holidays from Google Calendar’s “Holidays in Malaysia”. A state holiday shows the states it applies to; a date marked “may change” is not yet confirmed.</p>';
 
   var DIALOG_HTML =
     '<div id="csDialog" role="dialog" aria-modal="true" aria-labelledby="csTitle">' +

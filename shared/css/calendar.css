@@ -31,7 +31,15 @@ main.calmain { max-width: 1100px; }
 .calcell.holiday .num { color: var(--unpaid-chip-text); font-weight: 500; }
 .calcell.holiday.today .num { color: var(--accent-text); }
 .holtag { width: 100%; padding: 2px 5px; border-radius: 6px; font-size: 10px; line-height: 1.25; background: var(--unpaid-chip); color: var(--unpaid-chip-text); overflow-wrap: anywhere; cursor: default; }
+/* A state holiday: the same tag in yellow (red = the whole country is off; yellow = only some states) */
+:root { --regional-chip: #fef3c7; --regional-chip-text: #854d0e; }
+@media (prefers-color-scheme: dark) { :root { --regional-chip: #4a3b12; --regional-chip-text: #fde68a; } }
+.holtag.regional { background: var(--regional-chip); color: var(--regional-chip-text); }
 @media (max-width: 600px) { .holtag { width: auto; max-width: 100%; padding: 4px 9px; font-size: 12px; } }
+/* The month's holidays with their states, closed until opened */
+.calhols { margin: 10px 2px 0; font-size: 13px; color: var(--muted); }
+.calhols summary { cursor: pointer; padding: 6px 0; }
+.calhols ul { margin: 2px 0 6px; padding-left: 18px; line-height: 1.5; color: var(--text); }
 .calcell.today .num { width: 26px; margin: 0 auto; border-radius: 6px; background: var(--accent); color: var(--accent-text); font-weight: 500; }
 .calpill { width: 100%; padding: 3px 5px; border: none; border-radius: 6px; text-align: left; font-size: 11px; line-height: 1.25;
            background: var(--paid-chip); color: var(--paid-chip-text); overflow-wrap: anywhere; }
